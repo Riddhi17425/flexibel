@@ -1,0 +1,15 @@
+User-Agent: *
+Disallow: /?pid
+Disallow: /?fp
+Disallow: /login
+Disallow: /thank-you
+Disallow: /landing 
+Disallow: /admin/
+Disallow: /login/
+Disallow: /*?*
+Disallow: /*&*
+Disallow: /public/
+
+Allow: /
+
+Sitemap: https://flexibel.ae/sitemap.xml

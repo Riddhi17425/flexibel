@@ -1,0 +1,47 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # Block access to all subdomains like mail.flexibel.ae
+    RewriteCond %{HTTP_HOST} !^flexibel\.ae$ [NC]
+    RewriteRule ^(.*)$ https://flexibel.ae/$1 [R=301,L]
+
+  # 1. Force non-www and HTTPS
+  RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+  RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+   RewriteEngine On
+RewriteRule ^product/interlok-hose/?$ https://flexibel.ae/product/interlock-hose [R=301,L]
+RewriteRule ^products/metallic-expansion-joints/?$ https://flexibel.ae/product/metallic-expansion-joints [R=301,L]
+RewriteRule ^get-products-by-joint/?$ https://flexibel.ae/ [R=301,L]
+
+RewriteRule ^products/fabric-expansion-joints/?$ https://flexibel.ae/product/fabric-expansion-joint/ [R=301,L]
+
+RewriteCond %{HTTP_REFERER} ^https?://its-me-in-here\.pages\.dev [NC,OR]
+RewriteCond %{HTTP_HOST} ^its-me-in-here\.pages\.dev$ [NC]
+RewriteRule ^(.*)$ https://flexibel.ae/ [L,R=301]
+
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+    RewriteCond %{THE_REQUEST} \s/index\.(html?|php)\s [NC]
+  RewriteRule ^index\.(html?|php)$ https://%{HTTP_HOST}/ [R=301,L]
+  # 2. Single Page Application (React/Vue/Angular) routing
+  # If request is not a real file or directory, send to index.html
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.php [L]
+
+ 
+
+</IfModule>
+
+<Files 403.shtml>
+order allow,deny
+allow from all
+</Files>
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Set the “ea-php82” package as the default “PHP” programming language.
+<IfModule mime_module>
+  AddHandler application/x-httpd-ea-php82 .php .php8 .phtml
+</IfModule>
+# php -- END cPanel-generated handler, do not edit
