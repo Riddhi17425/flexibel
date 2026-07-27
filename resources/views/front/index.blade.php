@@ -54,8 +54,8 @@
             <div class="hero_slider">
                 <div class="slide">
                     <picture>
-                        <source media="(min-width:768px)" srcset="{{asset('public/front/images/hero_slide_4.png')}}" class="img-fluid" style="height:100vh;width:100vw;" loading="lazy">
-                        <img src="{{asset('public/front/images/banner_1_M.jpg')}}" alt="Expansion Joints" class="img-fluid" style="height:100vh;width:100vw;" loading="lazy">
+                        <source media="(min-width:768px)" srcset="{{asset('public/front/images/hero_slide_4.webp')}}" class="img-fluid" style="height:100vh;width:100vw;" loading="lazy">
+                        <img src="{{asset('public/front/images/banner_1_M.webp')}}" alt="Expansion Joints" class="img-fluid" style="height:100vh;width:100vw;" loading="lazy">
                     </picture>
                     <div class="customslider-text col-xxl-5 col-md-7 col-lg-5">
                         <h1>RESILIENCE<br> ENGINEERED</h1>
@@ -202,15 +202,15 @@
         <div class="row step-1 mb-2 mb-md-5">
             <div class="col-lg-4">
                 <p class="mb-0"><b>SINCE 2012</b></p>
-            </div> 
+            </div>
             <div class="col-lg-8">
                 <h2 class="main_head text-start gsap_text">We Engineer for the Real World.</h2>
                   <p class="mb-0 gsap_text">We believe performance is proven only when systems operate seamlessly. </p>
                     <p class="mb-0 gsap_text"><b>Our mission is simple:</b> deliver products that work under real-world conditions, and back them with services that extend their lifecycle.</p>
                     <p class="mb-0 gsap_text"><b>The result:</b> Maximum resilience, zero failure, and operations that never skip a beat.</p>
             </div>
-            
-           
+
+
         </div>
         <div class="row  step-2 ">
             <div class="col-lg-12 my-0 my-md-5 mt-md-0 mt-4">
@@ -332,10 +332,10 @@
 <!--                            <div class="tab-pane fade show active" id="pills-Overview{{ $index }}" role="tabpanel" aria-labelledby="Overview-tab{{ $index }}">-->
 <!--                                <div class=" mt-4 mt-md-1 g-md-5">-->
 <!--                                    <div>{!! $data->title !!}</div>-->
-                                    
+
 <!--                                    <p class="my-lg-5 text-white">-->
 <!--                                        {!! strip_tags(html_entity_decode($data->description ?? '' )) !!}-->
-                                        
+
 <!--                                    </p>-->
 <!--                                    <a href="javascript:void(0)" class="prod_btn">-->
 <!--                                        Explore Now-->
@@ -352,17 +352,17 @@
 <!--                            </div>-->
 <!--                            <div class="tab-pane fade" id="pills-Product{{ $index }}" role="tabpanel" aria-labelledby="Product-tab{{ $index }}">-->
 <!--                                <div class=" mt-4 mt-md-1 g-md-5">-->
-                                    
+
 <!--                                    <img src="{{ asset('public/home_product_slider/desktop/' . $data->image_desktop) }}" alt="product" class="img-fluid">-->
-                                
-                                     
+
+
 <!--                                </div>-->
 <!--                            </div>-->
 <!--                            <div class="tab-pane fade" id="pills-range{{ $index }}" role="tabpanel" aria-labelledby="range-tab{{ $index }}">-->
 <!--                                <div class=" mt-4 mt-md-1 g-md-5">-->
 <!--                                    <ul class="product_points">-->
 <!--                                        {!! $data->detail_description !!}-->
-                                       
+
 <!--                                    </ul>-->
 
 <!--                                </div>-->
@@ -391,7 +391,7 @@
                                 <p class="mt-lg-5 mb-lg-3 text-white">
                                     {!! strip_tags(html_entity_decode($data->description ?? '' )) !!}
                                 </p>
-                                <a href="{{ route('products.by.category', ['category' => $data->category->url]) }}" class="prod_btn mb-2"> 
+                                <a href="{{ route('products.by.category', ['category' => $data->category->url]) }}" class="prod_btn mb-2">
                                     Explore Products
                                     <span class="svg ms-2">
                                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -399,8 +399,8 @@
 </svg>
                                     </span>
                                 </a> <br/>
-                                
-                                <a href="{{route('contact-us')}}"  onclick="setScrollFlag()" class="prod_btn"> 
+
+                                <a href="{{route('contact-us')}}"  onclick="setScrollFlag()" class="prod_btn">
                                     Enquire Now
                                     <span class="svg ms-2">
                                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -508,7 +508,7 @@
               <!--                              </svg>-->
               <!--                          </span>-->
               <!--                      </a>-->
-                                     
+
               <!--              </div>-->
 
               <!--          </div>-->
@@ -614,7 +614,7 @@
                                     <!--        </svg>-->
                                     <!--    </span>-->
                                     <!--</a>-->
-                                     
+
                             </a>
                       </div>
                   </div>
@@ -775,7 +775,7 @@
                             </div>
                         </div>
                         @endforeach
-                    
+
                         {{-- <div class="test_msg_slide">
                             <h3 class="sub_title"> Quality and Service!</h3>
                             <p>We have been using Flexibellows products for years, and their expansion joints have
@@ -879,7 +879,7 @@
         <div class="sus_wrapper mobile_slider slider_slick_dots">
             <div class="sus_box sus_1 active">
                 <div>
-                    
+
                     <img src="{{asset('public/front/images/sus1.png')}}" alt="Globe Green Initiatives" class="img-fluid" loading="lazy">
                 </div>
                 <div>
@@ -897,7 +897,7 @@
                     <h2 class="blog_detailsub_head text-white">Social</h2>
                     <p>
                         Local sourcing: 50% of raw materials procured from regional SMEs to boost economic growth.Workforce empowerment: Regular training and upskilling programs for employees at all levels.Community engagement: Actively supporting regional initiatives that promote education and sustainability.
-                       
+
                     </p>
                 </div>
             </div>
@@ -918,7 +918,7 @@
 <!-- SUS -->
 <!-- environment -->
 <!--<h2>Instagram Feed</h2>-->
-            
+
 <!-- linedin -->
 @if (!empty($feed) && count($feed) > 0)
 <section class="linkedin mt-100" id="list-item-10">
@@ -988,7 +988,7 @@
             @endforeach
         </div>
     </div>
-    
+
     <!--<div class="row expansion_slider slider_slick_dots">-->
     <!--    <div class="col-lg-4 mb-lg-0 mb-3">-->
     <!--        <div class="linkedin-card">-->

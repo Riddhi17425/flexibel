@@ -21,7 +21,7 @@
                         <li><a href="{{route('about')}}">About</a></li>
                         <li><a href="{{route('industries')}}">Industries</a></li>
                         <!--<li><a href="{{route('quality')}}">Quality</a></li>-->
-                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#staticBackdrop">E-Catalogue</a></li>
+                       <li><a href="{{ route('catalogue.form') }}" role="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop">E-Catalogue</a></li>
                         <li><a href="{{route('certificate')}}">Certifications</a></li>
                         <li><a href="{{route('contact-us')}}" onclick="setScrollFlag()">Contact Us</a></li>
                     </ul>
