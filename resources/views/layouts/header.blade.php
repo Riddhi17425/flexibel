@@ -19,6 +19,12 @@
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="627">
 
+          <!--Twitter X Card Tags-->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{!! $metatitle ?? '' !!}">
+        <meta name="twitter:description" content="{!! strip_tags($metadescription ?? '') !!}">
+        <meta name="twitter:image" content="{{ $og_image ?? asset('public/front/images/favicon.png') }}">
+
         <!-- bootstrap -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
             integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
