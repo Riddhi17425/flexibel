@@ -329,6 +329,57 @@ Across EPC projects, shipyards, and process industries, the integrity of a pipin
 <!-- certificate -->
 
 <!-- timline js -->
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "AboutPage",
+      "@id": "https://flexibel.ae/about#webpage",
+      "url": "https://flexibel.ae/about",
+      "name": "About Flexibel | Expansion Joint Manufacturer in UAE",
+      "headline": "About Flexibel",
+      "description": "Learn about Flexibel, a leading UAE manufacturer of Metallic Expansion Joints, Rubber Expansion Joints, Fabric Expansion Joints, Expansion Bellows and Metallic Hoses. Discover our expertise, manufacturing capabilities and commitment to delivering reliable industrial piping solutions.",
+      "isPartOf": {
+        "@id": "https://flexibel.ae/#website"
+      },
+      "about": {
+        "@id": "https://flexibel.ae/#organization"
+      },
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": "https://flexibel.ae/public/front/images/banner_1_M.jpg"
+      },
+      "breadcrumb": {
+        "@id": "https://flexibel.ae/about#breadcrumb"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://flexibel.ae/about#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://flexibel.ae/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "About Us",
+          "item": "https://flexibel.ae/about"
+        }
+      ]
+    }
+  ]
+}
+
+
+</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const links = document.querySelectorAll('.h--timeline-date');
