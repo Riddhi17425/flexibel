@@ -55,7 +55,7 @@
                 <div class="slide">
                     <picture>
                         <source media="(min-width:768px)" srcset="{{asset('public/front/images/hero_slide_4.webp')}}" class="img-fluid" style="height:100vh;width:100vw;" loading="lazy">
-                        <img src="{{asset('public/front/images/banner_1_M.webp')}}" alt="Expansion Joints" class="img-fluid" style="height:100vh;width:100vw;" loading="lazy">
+                        <img src="{{asset('public/front/images/banner_1_M.jpg')}}" alt="Expansion Joints" class="img-fluid" style="height:100vh;width:100vw;" loading="lazy">
                     </picture>
                     <div class="customslider-text col-xxl-5 col-md-7 col-lg-5">
                         <h1>RESILIENCE<br> ENGINEERED</h1>
@@ -1068,6 +1068,206 @@
 <!--</script>-->
 <!--adipec popup-->
 @include('layouts.footer')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://flexibel.ae/#organization",
+      "name": "Flexibel Expansion Joints",
+      "alternateName": "Flexibel",
+      "url": "https://flexibel.ae/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://flexibel.ae/public/front/images/flexi_header_logo.svg"
+      },
+      "image": "https://flexibel.ae/public/front/images/banner_1_M.jpg",
+      "description": "Flexibel is a leading manufacturer and supplier of Metallic Expansion Joints, Rubber Expansion Joints, Fabric Expansion Joints, Expansion Bellows and Metallic Hoses across the UAE and the Middle East.",
+      "telephone": "+971529037473",
+      "email": "sales@flexibel.ae",
+      "sameAs": [
+        "https://www.linkedin.com/company/flexibel-expansion-joints/",
+        "https://www.facebook.com/flexibelexpansionjoints/",
+        "https://www.instagram.com/flexibel.ae/",
+        "https://x.com/flexibellows"
+      ],
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "contactType": "Head Office",
+          "telephone": "+971529037473",
+          "email": "sales@flexibel.ae",
+          "areaServed": "AE",
+          "availableLanguage": [
+            "English"
+          ]
+        },
+        {
+          "@type": "ContactPoint",
+          "contactType": "Sales Office",
+          "telephone": "+97339463776",
+          "email": "sales@flexibel.ae",
+          "areaServed": "BH",
+          "availableLanguage": [
+            "English"
+          ]
+        },
+        {
+          "@type": "ContactPoint",
+          "contactType": "Sales Office",
+          "telephone": "+97125506844",
+          "email": "sales.adh@goldenharbour.ae",
+          "areaServed": "AE",
+          "availableLanguage": [
+            "English"
+          ]
+        }
+      ]
+    },
+    {
+      "@type": "LocalBusiness",
+      "@id": "https://flexibel.ae/#localbusiness",
+      "name": "Flexibel Expansion Joints",
+      "url": "https://flexibel.ae/",
+      "image": "https://flexibel.ae/public/front/images/banner_1_M.jpg",
+      "parentOrganization": {
+        "@id": "https://flexibel.ae/#organization"
+      },
+      "telephone": "+971529037473",
+      "email": "sales@flexibel.ae",
+      "priceRange": "$$",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Al Quoz Industrial Area No.4",
+        "addressLocality": "Dubai",
+        "postalCode": "P.O. Box 181440",
+        "addressCountry": "AE"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 25.1293984,
+        "longitude": 55.2130467
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
+          "opens": "08:00",
+          "closes": "17:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Saturday",
+          "opens": "08:00",
+          "closes": "16:00"
+        }
+      ],
+      "areaServed": [
+        {
+          "@type": "Country",
+          "name": "United Arab Emirates"
+        },
+        {
+          "@type": "Country",
+          "name": "Bahrain"
+        },
+        {
+          "@type": "Country",
+          "name": "Saudi Arabia"
+        },
+        {
+          "@type": "Country",
+          "name": "Qatar"
+        },
+        {
+          "@type": "Country",
+          "name": "Oman"
+        },
+        {
+          "@type": "Country",
+          "name": "Kuwait"
+        }
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Expansion Joint Products",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Product",
+              "name": "Metallic Expansion Joints"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Product",
+              "name": "Rubber Expansion Joints"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Product",
+              "name": "Fabric Expansion Joints"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Product",
+              "name": "Expansion Bellows"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Product",
+              "name": "Metallic Hoses"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://flexibel.ae/#website",
+      "url": "https://flexibel.ae/",
+      "name": "Flexibel Expansion Joints",
+      "publisher": {
+        "@id": "https://flexibel.ae/#organization"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://flexibel.ae/#webpage",
+      "url": "https://flexibel.ae/",
+      "name": "Expansion Joint Manufacturer & Supplier in UAE | Flexibel",
+      "description": "Flexibel is a leading manufacturer and supplier of Metallic Expansion Joints, Rubber Expansion Joints, Fabric Expansion Joints, Expansion Bellows and Metallic Hoses across the UAE and the Middle East.",
+      "isPartOf": {
+        "@id": "https://flexibel.ae/#website"
+      },
+      "about": {
+        "@id": "https://flexibel.ae/#organization"
+      },
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": "https://flexibel.ae/public/front/images/banner_1_M.jpg"
+      },
+      "inLanguage": "en"
+    }
+  ]
+}
+</script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const asideBar = document.querySelector('.aside-bar');
