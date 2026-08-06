@@ -27,7 +27,7 @@
                 <!--<p class="sub_head ms-0">Contact Us</p>-->
                 <h1 class="main_head text-start">Contact Us</h1>
                 <p>Have questions about our products or need a custom solution?
-                    We’re here to help! Contact us for inquiries, quotes, or technical support. Our team is ready to
+                    Weâ€™re here to help! Contact us for inquiries, quotes, or technical support. Our team is ready to
                     assist you with all your bellows and expansion joint needs.</p>
             </div>
             <div class="col-md-4">
@@ -133,7 +133,7 @@
         <div class="row">
             <div class="col-lg-9 vacancie_form" >
                 <div class="stepper_wrapper">
-                    <p >Fill out the form below with your details, and we’ll get back to you as soon as possible.</p>
+                    <p >Fill out the form below with your details, and weâ€™ll get back to you as soon as possible.</p>
                     <form  id="contactform" action="{{route('contact.submit')}}" method="post" >
                         @csrf
                         <input type="hidden" name="form_source" id="form_source" value="Page Inquiry">
@@ -231,6 +231,89 @@
     </div>
 </section>
 @include('layouts.footer')
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://flexibel.ae/#organization",
+      "name": "Flexibel Expansion Joints",
+      "url": "https://flexibel.ae/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://flexibel.ae/public/front/images/flexi_header_logo.svg"
+      },
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "contactType": "Head Office",
+          "telephone": "+971529037473",
+          "email": "sales@flexibel.ae",
+          "areaServed": "AE",
+          "availableLanguage": "English"
+        },
+        {
+          "@type": "ContactPoint",
+          "contactType": "Sales Office",
+          "telephone": "+97339463776",
+          "email": "sales@flexibel.ae",
+          "areaServed": "BH",
+          "availableLanguage": "English"
+        },
+        {
+          "@type": "ContactPoint",
+          "contactType": "Sales Office",
+          "telephone": "+97125506844",
+          "email": "sales.adh@goldenharbour.ae",
+          "areaServed": "AE",
+          "availableLanguage": "English"
+        }
+      ]
+    },
+    {
+      "@type": "ContactPage",
+      "@id": "https://flexibel.ae/contact-us#webpage",
+      "url": "https://flexibel.ae/contact-us",
+      "name": "Contact Flexibel | Expansion Joint Manufacturer & Supplier in UAE",
+      "headline": "Contact Flexibel",
+      "description": "Get in touch with Flexibel for enquiries related to Metallic Expansion Joints, Rubber Expansion Joints, Fabric Expansion Joints, Expansion Bellows and Metallic Hoses. Contact our Dubai headquarters or regional sales offices.",
+      "isPartOf": {
+        "@id": "https://flexibel.ae/#website"
+      },
+      "about": {
+        "@id": "https://flexibel.ae/#organization"
+      },
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": "https://flexibel.ae/public/front/images/banner_1_M.jpg"
+      },
+      "breadcrumb": {
+        "@id": "https://flexibel.ae/contact-us#breadcrumb"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://flexibel.ae/contact-us#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://flexibel.ae/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Contact Us",
+          "item": "https://flexibel.ae/contact-us"
+        }
+      ]
+    }
+  ]
+}
+</script>
 
  <script>
 window.addEventListener("load", function () {
@@ -240,7 +323,7 @@ window.addEventListener("load", function () {
         const target = document.getElementById("contact-us");
 
         if (target) {
-            const offset = 240; // 👈 jitna upar se gap chahiye (navbar height)
+            const offset = 240; // ðŸ‘ˆ jitna upar se gap chahiye (navbar height)
 
             const elementPosition = target.getBoundingClientRect().top + window.pageYOffset;
             const offsetPosition = elementPosition - offset;
