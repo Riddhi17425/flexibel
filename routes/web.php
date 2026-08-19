@@ -38,6 +38,7 @@ use App\Http\Controllers\admin\HomeProductSliderController;
 use App\Http\Controllers\admin\HomeCertificateController;
 use Illuminate\Support\Facades\Artisan;
 // use App\Http\Controllers\adminController;
+use App\Http\Controllers\SitemapController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,12 +51,14 @@ use Illuminate\Support\Facades\Artisan;
 |
 */
 
-    //Front route
-  Route::get('clear', function () {
+//Front route
+Route::get('clear', function () {
     Artisan::call('optimize:clear');
- 
     return 'Optimization cache cleared!';
 });
+
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/about', [DashboardController::class, 'about'])->name('about');
     Route::get('/certificates', [DashboardController::class, 'certificates'])->name('certificate');
@@ -66,7 +69,7 @@ use Illuminate\Support\Facades\Artisan;
     Route::get('/comprehensive-audit', [DashboardController::class, 'DesignCalculation'])->name('design-calculation');
     Route::get('/engineering-and-design', [DashboardController::class, 'PremiumService'])->name('premium-service');
     Route::get('/onsite-service', [DashboardController::class, 'OnsiteService'])->name('onsite-service');
-     Route::get('/inspection-and-quality-analysis', [DashboardController::class, 'InspectionServices'])->name('Inspection-services');
+    Route::get('/inspection-and-quality-analysis', [DashboardController::class, 'InspectionServices'])->name('Inspection-services');
     Route::get('/emergency-and-turnaround-support', [DashboardController::class, 'EmergencyServices'])->name('emergency-services');
     Route::get('/field-services-and-repair', [DashboardController::class, 'Logistics'])->name('logistics');
     Route::post('/contact-submit', [DashboardController::class, 'submit'])->name('contact.submit');
