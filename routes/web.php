@@ -57,7 +57,9 @@ Route::get('clear', function () {
     return 'Optimization cache cleared!';
 });
 
+// START - DYNAMIC SITEMAP
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+// END - DYNAMIC SITEMAP
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/about', [DashboardController::class, 'about'])->name('about');

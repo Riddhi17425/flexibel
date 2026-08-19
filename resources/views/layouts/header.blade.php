@@ -7,7 +7,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{!! $metatitle ?? '' !!}</title>
         <meta name="description" content="{!! strip_tags($metadescription ?? '') !!}">
-        <meta name="robots" content="follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+
+        @if(request()->is('privacy-policy') || request()->is('terms-and-condition') || request()->is('quality') || request()->is('integrat') || request()->is('onsite-service') || request()->is('datasheets') || request()->is('life-at-flexibellows') || request()->is('view-all-feeds') || request()->is('current-vacancies/*'))
+            <meta name="robots" content="nofollow, noindex"/>
+        @else
+            <meta name="robots" content="follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large"/>    
+        @endif
 
         <link rel="icon" type="image/x-icon" href="{{ asset('fave-icon.png') }}">
         <link rel="canonical" href="{{ url()->current() }}" />
@@ -19,7 +24,7 @@
         <meta property="og:image:width" content="1200">
         <meta property="og:image:height" content="627">
 
-          <!--Twitter X Card Tags-->
+        <!--Twitter X Card Tags-->
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="{!! $metatitle ?? '' !!}">
         <meta name="twitter:description" content="{!! strip_tags($metadescription ?? '') !!}">
