@@ -896,7 +896,7 @@ class DashboardController extends Controller
                     'name' => $request->name ?? $request->fullname ?? '',
                     'product_name' => $request->product_name ?? '',
                     'company_name' => $request->company_name ?? '', 
-                    'contact' => $request->contact ?? $request->mobile ?? '',
+                    'contact' => $request->phone ?? '',
                     'email' => $request->email ?? '',
                     'country' => $request->country ?? '',
                     'message' => $request->message ?? '',
