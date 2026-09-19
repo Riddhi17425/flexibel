@@ -124,6 +124,10 @@
                             </div>
                         </div>
                         
+                        <div class="col-md-12">
+                            <label class="form-label" for="banner_alt_tag">Blog Banner Image Alt</label>
+                            <input type="text" id="banner_alt_tag" name="banner_alt_tag" value="{{ $data->banner_alt_tag }}" class="form-control">
+                        </div>
 
 
                         <div class="col-md-12">

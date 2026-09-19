@@ -199,7 +199,7 @@ table tbody td:first-child {
 <section class="mt-100">
     <div class="container">
         <a href="{{route('contact-us')}}">
-            <img src="{{asset('public/blogs/banner_image/'.$blog_details->banner_image)}}" alt="{{  str_replace(['-', '_'],' ', pathinfo($blog_details->banner_image, PATHINFO_FILENAME)) }}" class="img-fluid">
+            <img src="{{asset('public/blogs/banner_image/'.$blog_details->banner_image)}}" alt="{{ $blog_details->banner_alt_tag ?? '' }}" class="img-fluid">
         </a>
     </div>
     <div class="container ">

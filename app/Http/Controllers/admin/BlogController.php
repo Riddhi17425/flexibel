@@ -59,6 +59,7 @@ class BlogController extends Controller
         $post->meta_description = $request->get('meta_description');
         $post->front_alt_tag = $request->get('front_alt_tag');
         $post->detail_alt_tag = $request->get('detail_alt_tag');
+        $post->banner_alt_tag = $request->get('banner_alt_tag');
         $post->title_description = $title_description;
  
         if($request->hasFile('detail_image')) {
@@ -165,6 +166,7 @@ class BlogController extends Controller
         $post->meta_description = $request->get('meta_description');
         $post->front_alt_tag = $request->get('front_alt_tag');
         $post->detail_alt_tag = $request->get('detail_alt_tag');
+        $post->banner_alt_tag = $request->get('banner_alt_tag');
         $post->title_description = $title_description;
        
         if($request->hasFile('detail_image')) {

@@ -73,6 +73,10 @@
                             <label class="form-label" for="banner_image">Blog Banner Image</label>
                             <input type="file" id="banner_image" name="banner_image" class="form-control">
                         </div>
+                        <div class="col-md-12">
+                            <label class="form-label" for="banner_alt_tag">Blog Banner Image Alt</label>
+                            <input type="text" id="banner_alt_tag" name="banner_alt_tag" class="form-control">
+                        </div>
                         <!--<div class="card-header py-3 p-0 d-flex justify-content-between bg-transparent border-bottom-0">-->
                         <!--    <h6 class="mb-0 fw-bold">Slider Section</h6>-->
                         <!--</div>-->
