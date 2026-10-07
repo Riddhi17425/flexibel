@@ -42,11 +42,18 @@
         <p class="sub_head ms-0">Enquire</p>
         <h2 class="main_head text-start">Expansion Joint Form</h2>
         <div class="stepper_wrapper mt-100">
+
             <form id="enquiryForm" action="{{route('enquiry-submit')}}" method="post">
                 @csrf
-                <div style="display:none;">
-                    <input type="text" name="website_url" id="website_url" value="">
-                </div>
+                    <div style="position:absolute; left:-9999px; opacity:0; height:0; overflow:hidden;">
+                        <input
+                            type="text"
+                            name="website_url"
+                            id="website_url"
+                            value=""
+                            tabindex="-1"
+                            aria-hidden="true" >
+                    </div>
                 <!-- form tab -->
                 <div class="stepper-header">
                      <div class="step active step_title-1"><span class="d-none d-xl-block">COMPANY & BASIC PRODUCT INFO</span><span class="d-block d-xl-none">1</span></div>

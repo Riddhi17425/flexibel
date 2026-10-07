@@ -59,6 +59,7 @@ use Illuminate\Support\Str;
 use Pdf;
 use App\Models\ProductInquiry;
 use App\Models\WhatsappInquiry;
+use Illuminate\Support\Facades\RateLimiter;
 
 class DashboardController extends Controller
 {
@@ -72,10 +73,12 @@ class DashboardController extends Controller
     public function login(){
         return view('auth.login');
     }
+
     public function admin(){
         return view('admin.admin');
     }
-   public function index()
+
+    public function index()
     {
         $metatitle = "Expansion Joint Suppliers In UAE | Flexibel";
         $metadescription = "Flexibel Expansion Joints is the UAE based manufacturer and suppliers of expansion joints bellows with highest quality standard in the Middle East.";
@@ -137,6 +140,7 @@ class DashboardController extends Controller
         $milestones = Milestone::whereNull('deleted_at')->get();
         return view('front.about',compact('certificates','metatitle','metadescription','milestones'));
     }
+    
     public function certificates()
     {
         $metatitle = "Our Globally Recognized Certifications You Can Trust";
@@ -144,6 +148,7 @@ class DashboardController extends Controller
         $certificates = Certificate::whereNull('deleted_at')->get();
         return view('front.certificates',compact('certificates','metatitle','metadescription'));
     }
+
     public function Industries()
     {
         $metatitle = "Industries we Serve | Tailored Solutions for Your Sector";
@@ -151,6 +156,7 @@ class DashboardController extends Controller
         $industries = Industry::whereNull('deleted_at')->get();
         return view('front.industries',compact('industries','metatitle','metadescription'));
     }
+
     public function ContactUs()
     {
         $metatitle = "Contact Us | Flexibel Expansion Joints";
@@ -158,6 +164,7 @@ class DashboardController extends Controller
         $productCategories = ProductCategory::whereNull('deleted_at')->get();
         return view('front.contact',compact('metatitle','metadescription', 'productCategories'));
     }
+
     public function Quality()
     {
         $metatitle = "Quality & Compliance of Our Products";
@@ -165,6 +172,7 @@ class DashboardController extends Controller
         $qualities = Quality::whereNull('deleted_at')->get();
         return view('front.quality',compact('qualities','metatitle','metadescription'));
     }
+
     public function Integrated()
     {
         $metatitle = "Quality & Compliance of Our Products";
@@ -172,119 +180,230 @@ class DashboardController extends Controller
         $qualities = Quality::whereNull('deleted_at')->get();
         return view('front.integrated',compact('qualities','metatitle','metadescription'));
     }
+
     public function DesignCalculation()
     {
         $metatitle = "Our Operational Integrity at Flexibel";
         $metadescription = "At Flexibel, our Independent Audit provides a full operational assessment, confirming joint condition, and benchmarking performance.";
         return view('front.comprehensive-audit',compact('metatitle','metadescription'));
     }
+
     public function PremiumService()
     {
         $metatitle = "Our Engineering & Design Approach | Flexibel Expansion Joints";
         $metadescription = "At Flexibel Expansion Joints, every joint starts with design. And a good design prevents failures, extends service life, and lowers total cost of ownership.";
         return view('front.engineering-design',compact('metatitle','metadescription'));
     }
+
     public function OnsiteService()
     {
         $metatitle = "Experience Our Flexibel On-Site Service";
         $metadescription = "At Flexibel, our on-site services bring our specialized knowledge and capabilities directly to your facility, ensuring optimal performance and minimizing disruptions.";
         return view('front.onsite_service',compact('metatitle','metadescription'));
     }
-     public function InspectionServices()
+
+    public function InspectionServices()
     {
         $metatitle = "Our Quality Assurance & Inspection Process";
         $metadescription = "At Flexibel, inspection and QA are embedded  for material verification to ensure joints don’t just meet standards; but prove performance in the field.";
         return view('front.inspection-and-qa',compact('metatitle','metadescription'));
     }
-     public function EmergencyServices()
+
+    public function EmergencyServices()
     {
         $metatitle = "Our Emergency Services & Turnaround Support";
         $metadescription = "At Flexibel our Emergency Services & Support provide rapid turnaround from urgent design to on-site installation  within as little as 24 hours.";
         return view('front.emergency-turnaround-support',compact('metatitle','metadescription'));
     }
+
     public function Logistics()
     {
         $metatitle = "Our Field Services & Repair at Flexibel";
         $metadescription = "Our Flexibel’s Field Services ensure your expansion joints are installed, maintained, and restored with precision for safer installation & extended service life.";
         return view('front.field_service_repair',compact('metatitle','metadescription'));
     }
+
     public function ProductInquiryStore(Request $request)
     {
-        // 🔒 Honeypot check
-    if (!empty($request->website_url)) {
-        // If the hidden field is filled → block as spam
-        return back()->with('error', 'Invalid form submission.');
-    }
-        $validator = Validator::make($request->all(), [
-            'fullname' => 'required|string|max:50',
-            'company_name' => 'required|string|max:50',
-            'product_name' => 'nullable|string|max:50',
-            'email' => 'required|email|max:60',
-            'mobile' => 'required|digits_between:10,15',
-            'country' => 'nullable|string|max:50',
-            'g-recaptcha-response' => 'required|captcha'
-        ]);
+        // 1. Honeypot check
+        if ($request->filled('website_url'))
+        {
+            Log::warning('Product Inquiry form blocked: honeypot triggered', [
+                'ip' => $request->ip(),
+            ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'website_url' => 'Invalid form submission.'
+                ]);
         }
 
-        // ✅ Store in DB (example)
-        ProductInquiry::create([
-            'name' => $request->fullname,
-            'company_name' => $request->company_name,
-            'product_name' => $request->product_name,
-            'email' => $request->email,
-            'mobile' => $request->mobile,
-            'country' => $request->country,
-            
+        // 2. Disposable / temporary email domains
+        $disposableDomains = [
+            'mailinator.com',
+            '10minutemail.com',
+            'guerrillamail.com',
+            'tempmail.com',
+            'temp-mail.org',
+            'throwawaymail.com',
+            'maildrop.cc',
+            'dispostable.com',
+            'getairmail.com',
+            'moakt.com',
+            'spamgourmet.com',
+            'yopmail.com',
+            'sharklasers.com',
+            'mailnesia.com',
+            'fakemail.net',
+            'emailondeck.com',
+            'trashmail.com',
+            'mintemail.com',
+            'mytemp.email',
+            'mailboxvip.org',
+            'usmailerbox.org',
+            'mail220v.org',
+            'alquilerjetskitf.com',
+            'aimusicfixer.com'
+        ];
+
+        $email = strtolower(trim($request->input('email', '')));
+        $emailDomain = '';
+
+        if (str_contains($email, '@'))
+        {
+            $emailDomain = substr(strrchr($email, '@'), 1);
+        }
+
+        if ($emailDomain && in_array($emailDomain, $disposableDomains))
+        {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Please use a valid email address.'
+                ]);
+        }
+
+        // 3. Rate limiting
+        $key = 'product-inquiry-form:' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 3))
+        {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Too many submissions. Please try again later.'
+                ]);
+        }
+
+        // 4. Server-side validation including existing reCAPTCHA
+        $validator = Validator::make($request->all(), [
+            'fullname' => [
+                'required',
+                'string',
+                'min:2',
+                'max:50'
+            ],
+            'company_name' => [
+                'required',
+                'string',
+                'max:50'
+            ],
+            'product_name' => [
+                'nullable',
+                'string',
+                'max:50'
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:60'
+            ],
+            'mobile' => [
+                'required',
+                'digits_between:10,15'
+            ],
+            'country' => [
+                'nullable',
+                'string',
+                'max:50'
+            ],
+            'g-recaptcha-response' => [
+                'required',
+                'captcha'
+            ],
         ]);
-        $sheetData = [
-                    'form_type'=>'Product Form',
-                    'name' => $request->name ?? $request->fullname ?? '',
-                    'product_name' => $request->product_name ?? '',
-                    'company_name' => $request->company_name ?? '', 
-                    'contact' => $request->contact ?? $request->mobile ?? '',
-                    'email' => $request->email ?? '',
-                    'country' => $request->country ?? '',
-                    'message' => $request->message ?? '',
-                    'date' => now()->format('Y-m-d H:i:s')
-                ];
+
+        if ($validator->fails())
+        {
+            return back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        // Count only valid submissions
+        RateLimiter::hit($key, 600);
+
+        try {
+            // 5. Save Product Inquiry
+            $productInquiryData = [
+                'name' => $request->fullname,
+                'company_name' => $request->company_name,
+                'product_name' => $request->product_name,
+                'email' => $request->email,
+                'mobile' => $request->mobile,
+                'country' => $request->country,
+            ];
+
+            ProductInquiry::create($productInquiryData);
+
+            // 6. Prepare Google Sheet data
+            $sheetData = [
+                'form_type' => 'Product Form',
+                'name' => $request->fullname,
+                'product_name' => $request->product_name ?? '',
+                'company_name' => $request->company_name ?? '',
+                'contact' => $request->mobile ?? '',
+                'email' => $request->email ?? '',
+                'country' => $request->country ?? '',
+                'message' => $request->message ?? '',
+                'date' => now()->format('Y-m-d H:i:s')
+            ];
+
+            // 7. Send data to Google Sheets
             $response = Http::timeout(30)
                 ->withHeaders([
                     'Content-Type' => 'application/json'
                 ])
-                ->post('https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec', $sheetData);
- 
-            // Check response
-            if ($response->successful()) {
-                $responseData = $response->json();
-                if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                    Log::info('Data successfully sent to Google Sheets', [
-                        'email' => $request->email,
-                        'response' => $responseData
-                    ]);
-                                return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
- 
-                } else {
-                    Log::warning('Google Sheets API returned error', [
-                        'response' => $responseData,
-                        'email' => $request->email
-                    ]);
-                    return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
- 
-                }
-            } else {
-                Log::error('Google Sheets API request failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                    'email' => $request->email
-                ]);
-                    return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
- 
-            }
-        // return redirect("thank-you")->with('success', 'Your enquiry has been submitted successfully.');
+                ->post(
+                    'https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec',
+                    $sheetData
+                );
+
+            Log::info('Product Inquiry Google Sheet Response', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
+            // 8. Redirect
+            return redirect()
+                ->route('thank-you')
+                ->with('success', 'Your message has been sent successfully.');
+
+        } catch (\Exception $e) {
+
+            Log::error('ProductInquiryStore failed', [
+                'message' => $e->getMessage(),
+                'email' => $request->email,
+                'ip' => $request->ip(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Something went wrong, please try again.');
+        }
     }
+
     // public function submit(Request $request)
     // {
     // // 🔒 Honeypot check
@@ -365,71 +484,216 @@ class DashboardController extends Controller
  
     //         }
     // }
+
     public function submit(Request $request)
     {
-        // Honeypot check
-        if (!empty($request->website_url)) {
-            return back()->with('error', 'Invalid form submission.');
+        // 1. Honeypot check
+        if ($request->filled('website_url'))
+        {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'website_url' => 'Invalid form submission.'
+                ]);
         }
-      
+
+        // 2. Check reCAPTCHA
+        $captcha = $request->input('g-recaptcha-response');
+
+        if (!$captcha)
+        {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'g-recaptcha-response' => 'Please verify that you are not a robot.'
+                ]);
+        }
+
+        // 3. Block disposable / temporary email domains
+        $disposableDomains = [
+            'mailinator.com',
+            '10minutemail.com',
+            'guerrillamail.com',
+            'tempmail.com',
+            'temp-mail.org',
+            'throwawaymail.com',
+            'maildrop.cc',
+            'dispostable.com',
+            'getairmail.com',
+            'moakt.com',
+            'spamgourmet.com',
+            'yopmail.com',
+            'sharklasers.com',
+            'mailnesia.com',
+            'fakemail.net',
+            'emailondeck.com',
+            'trashmail.com',
+            'mintemail.com',
+            'mytemp.email',
+            'mailboxvip.org',
+            'usmailerbox.org',
+            'mail220v.org',
+            'alquilerjetskitf.com',
+            'aimusicfixer.com',
+        ];
+
+        $email = strtolower(trim($request->input('email', '')));
+        $emailDomain = '';
+
+        if (str_contains($email, '@'))
+        {
+            $emailDomain = substr(strrchr($email, '@'), 1);
+        }
+
+        if (in_array($emailDomain, $disposableDomains, true))
+        {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Please use a valid business or personal email address.'
+                ]);
+        }
+
+        // 4. Rate limiting
+        $key = 'contact-form:' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 3))
+        {
+            $seconds = RateLimiter::availableIn($key);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Too many submissions. Please try again later.'
+                ]);
+        }
+
+        // 5. Validate form fields
         $validated = $request->validate([
-            'fullname' => 'required|string|max:255',
-            'company_name' => 'required|string|max:255',
-            'mobile' => 'nullable|string|max:20',
-            'email' => 'required|email|max:255',
-            'message' => 'required|string',
+            'fullname' => [
+                'required',
+                'string',
+                'min:2',
+                'max:255',
+            ],
+
+            'company_name' => [
+                'required',
+                'string',
+                'min:2',
+                'max:255',
+            ],
+
+            'mobile' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+            ],
+
+            'category_id' => [
+                'required',
+            ],
+
+            'message' => [
+                'required',
+                'string',
+                'max:2000',
+            ],
+
+            'g-recaptcha-response' => [
+                'required',
+            ],
         ]);
-    
+
+
+        // 6. Count the submission only after validation passes
+        RateLimiter::hit($key, 600);
+
+        // 7. Prepare contact data
         $contactData = [
             'fullname' => $validated['fullname'],
             'company_name' => $validated['company_name'],
-            'mobile' => $validated['mobile'],
+            'mobile' => $validated['mobile'] ?? null,
             'email' => $validated['email'],
             'message' => $validated['message'],
-            'category_id' => is_numeric($request->category_id) ? $request->category_id : null,
-            'requirement_type' => !is_numeric($request->category_id) ? $request->category_id : null
+            'category_id' => is_numeric($request->category_id)
+                ? $request->category_id
+                : null,
+            'requirement_type' => !is_numeric($request->category_id)
+                ? $request->category_id
+                : null,
         ];
+
+        // 8. Save contact
         $contact = Contact::create($contactData);
-        // Prepare data for Google Sheet
+
+        // 9. Prepare Google Sheet data
         $sheetData = [
             'form_type' => $request->form_source ?? 'Contact Form',
             'name' => $validated['fullname'],
-            //'category' => $contact->category ? $contact->category->name : "Test Cat",
-            'category' => is_numeric($request->category_id) ? ($contact->category ? $contact->category->name : '') : $contact->requirement_type,
+            'category' => is_numeric($request->category_id)
+                ? ($contact->category ? $contact->category->name : '')
+                : $contact->requirement_type,
             'product_name' => $request->product_name ?? '',
             'company_name' => $validated['company_name'],
-            'contact' => $validated['mobile'],
+            'contact' => $validated['mobile'] ?? '',
             'email' => $validated['email'],
             'country' => $request->country ?? '',
             'message' => $validated['message'],
             'date' => now()->format('Y-m-d H:i:s'),
         ];
-        
+
+        // 10. Send Google Sheet + emails
         try {
-            // 🟢 First push data to Google Sheet
+            // Send data to Google Sheet
             $response = Http::timeout(30)
-                ->withHeaders(['Content-Type' => 'application/json'])
-                ->post('https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec', $sheetData);
-    
-            if ($response->failed()) {
+                ->withHeaders([
+                    'Content-Type' => 'application/json'
+                ])
+                ->post(
+                    'https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec',
+                    $sheetData
+                );
+
+            if ($response->failed())
+            {
                 Log::error('Google Sheets API request failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
             }
-    
-            // 🟢 Then send emails
-            Mail::to($validated['email'])->send(new SendContactMailToUser());
-            Mail::to(['sales@flexibel.ae'])->send(new SendContactMailToAdmin($contactData));
-    
-            // 🟢 Finally redirect after everything completes
-            return redirect()->route('thank-you')->with([
-                'success' => true,
-                'form_source' => $request->form_source ?? 'inquiry'
-            ]);
-        } catch (\Exception $e) {
+
+            // Send email to user
+            Mail::to($validated['email'])
+                ->send(new SendContactMailToUser());
+
+            // Send email to admin
+            Mail::to([
+                'sales@flexibel.ae'
+            ])->send(
+                new SendContactMailToAdmin($contactData)
+            );
+
+            // 11. Success redirect
+            return redirect()
+                ->route('thank-you')
+                ->with([
+                    'success' => true,
+                    'form_source' => $request->form_source ?? 'inquiry'
+                ]);
+        } 
+        catch (\Exception $e)
+        {
             Log::error('Contact Form Error: ' . $e->getMessage());
-            return back()->with('error', 'Something went wrong. Please try again.');
+            return back()
+                ->withInput()
+                ->with('error', 'Something went wrong. Please try again.');
         }
     }
 
@@ -494,12 +758,14 @@ class DashboardController extends Controller
         $metadescription = "Read our privacy policy to learn how we gather, use, share, and protect your information when you use our services or visit our website (the Site).";
         return view('front.privacy-policy',compact('metatitle','metadescription'));
     }
+
     public function TermsAndCondition()
     {
         $metatitle = "Terms & Conditions | Flexibel Expansion Joints";
         $metadescription = "Read our terms & conditions govern your access to and use of our site, services, privacy & legal compliance, and any related content.";
         return view('front.terms-condition',compact('metatitle','metadescription'));
     }
+
     public function CaseStudies()
     {
         $metatitle = "Case Studies | Explore Our Success Stories";
@@ -507,6 +773,7 @@ class DashboardController extends Controller
         $casestudies = CaseStudy::whereNull('deleted_at')->get();
         return view('front.case-studies',compact('casestudies','metatitle','metadescription'));
     }
+
     public function CaseStudiesDetails($url)
     {
         $caseStudy = CaseStudy::where('casestudy_url', $url)->first();
@@ -514,6 +781,7 @@ class DashboardController extends Controller
         $metadescription = $caseStudy->meta_description;
         return view('front.case-studies-detail',compact('caseStudy','metatitle','metadescription'));
     }
+
     public function Blog() 
     {  
         $metatitle = "Latest Blogs & Insights About Industrial Excellence";
@@ -521,6 +789,7 @@ class DashboardController extends Controller
         $blogs = Blog::where('status', 'Active')->whereNull('deleted_at')->orderBy('date', 'desc')->get();
         return view('front.blogs',compact('blogs','metatitle','metadescription'));
     }
+
     public function BlogDetails($url)
     {
         $blog_details = Blog::where('url',$url)
@@ -531,6 +800,7 @@ class DashboardController extends Controller
         $metadescription = $blog_details->meta_description;
         return view('front.blog-detail',compact('blog_details','metatitle','metadescription'));
     }
+
     public function Datasheets()
     {
         $metatitle = "Explore Our Technical Brochures & Datasheets";
@@ -539,13 +809,14 @@ class DashboardController extends Controller
         $countries = Country::orderBy('name')->get();
         return view('front.datasheets',compact('datasheet_categories','metatitle','metadescription'));
     }
+
     public function DatasheetForm(Request $request)
     {
-        // 🔒 Honeypot check
-    if (!empty($request->website_url)) {
-        // If the hidden field is filled → block as spam
-        return back()->with('error', 'Invalid form submission.');
-    }
+        // Honeypot check
+        if (!empty($request->website_url)) {
+            // If the hidden field is filled → block as spam
+            return back()->with('error', 'Invalid form submission.');
+        }
         $validated = $request->validate([
             'fullname' => 'required|string|max:255',
             'mobile' => 'nullable|string|max:20',
@@ -571,6 +842,7 @@ class DashboardController extends Controller
             return back()->with('error', 'Failed to send the email. Please try again later.');
         }
     }
+
     public function LifeAtFlexibellows()
     {
         $metatitle = "Datasheets";
@@ -578,6 +850,7 @@ class DashboardController extends Controller
         $lifeimages = Lifeimage::all();
         return view('front.life_at_flexibellows',compact('lifeimages','metatitle','metadescription'));
     }
+
     public function EnquiryForm()
     {
         $metatitle = "Enquiry Form | Expansion Joint Form";
@@ -586,168 +859,334 @@ class DashboardController extends Controller
         $categories = ProductCategory::orderBy('name')->get();
         return view('front.enquiry',compact('countries','categories','metatitle','metadescription'));
     }
+
     public function getProductsByJoint($id)
     {
         $products = Product::where('category_id', $id)->orderBy('name')->get();
         return response()->json($products);
     }
+
     public function EnquirySubmit(Request $request)
     {
-        if (!empty($request->website_url)) {
-            return back()->with('error', 'Invalid form submission.');
-        }
-        
-        if (
-            empty($request->fullname) ||
-            empty($request->company_name) ||
-            empty($request->contact) ||
-            empty($request->email) ||
-            empty($request->country)
-        ) {
-            Log::warning('Enquiry form skipped (required fields missing)', [
-                'fullname' => $request->fullname,
-                'company_name' => $request->company_name,
-                'contact' => $request->contact,
-                'email' => $request->email,
-                'country' => $request->country
+        // 1. Honeypot check
+        if ($request->filled('website_url'))
+        {
+            Log::warning('Spam enquiry blocked - honeypot triggered', [
+                'ip' => $request->ip(),
             ]);
-    
-            return redirect()->route('thank-you')
-                ->with('success', 'Your enquiry has been submitted successfully.');
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'website_url' => 'Invalid form submission.'
+                ]);
         }
-     
+
+        // 2. Rate limiting
+        $key = 'enquiry-form:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($key, 3))
+        {
+            Log::warning('Enquiry form rate limit exceeded', [
+                'ip' => $request->ip(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Too many submissions. Please try again later.'
+                ]);
+        }
+
+        // 3. Disposable email domain check
+        $disposableDomains = [
+            'mailinator.com',
+            '10minutemail.com',
+            'guerrillamail.com',
+            'tempmail.com',
+            'temp-mail.org',
+            'throwawaymail.com',
+            'maildrop.cc',
+            'dispostable.com',
+            'getairmail.com',
+            'moakt.com',
+            'spamgourmet.com',
+            'yopmail.com',
+            'sharklasers.com',
+            'mailnesia.com',
+            'fakemail.net',
+            'emailondeck.com',
+            'trashmail.com',
+            'mintemail.com',
+            'mytemp.email',
+            'mailboxvip.org',
+            'usmailerbox.org',
+            'mail220v.org',
+            'alquilerjetskitf.com',
+            'aimusicfixer.com',
+        ];
+
+        $email = strtolower(trim($request->input('email', '')));
+        $emailDomain = '';
+
+        if (str_contains($email, '@'))
+        {
+            $emailDomain = substr(strrchr($email, '@'), 1);
+        }
+
+        if (in_array($emailDomain, $disposableDomains, true))
+        {
+            Log::warning('Disposable email blocked', [
+                'email' => $email,
+                'ip' => $request->ip(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Please use a valid email address.'
+                ]);
+        }
+
+        // 4. Server-side validation
+        $validated = $request->validate([
+            'fullname' => [
+                'required',
+                'string',
+                'min:2',
+                'max:50',
+            ],
+
+            'company_name' => [
+                'required',
+                'string',
+                'min:2',
+                'max:50',
+            ],
+
+            'country' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'contact' => [
+                'required',
+                'string',
+                'min:10',
+                'max:20',
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                'max:60',
+            ],
+
+            'address' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'web_address' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+        ]);
+
+        // 5. Count only valid submissions
+        RateLimiter::hit($key, 600);
+
+        // 6. Save enquiry
         $post = new EnquiryForm();
-        $post->fullname = $request->fullname;
-        $post->company_name = $request->company_name;
+
+        $post->fullname = $validated['fullname'];
+        $post->company_name = $validated['company_name'];
         $post->address = $request->address;
-        $post->country = $request->country;
-        $post->contact = $request->contact;
+        $post->country = $validated['country'];
+        $post->contact = $validated['contact'];
         $post->fax_number = $request->fax_number;
-        $post->email = $request->email;
+        $post->email = $validated['email'];
         $post->web_address = $request->web_address;
+
         $post->joint_type = $request->joint_name;
         $post->product = $request->product_name;
         $post->nominal_diameter = $request->nominal_diameter;
         $post->article_number = $request->article_number;
         $post->length = $request->length;
         $post->quantity = $request->quantity;
+
         $post->inner_sleeve = $request->inner_sleeve;
         $post->cover = $request->cover;
         $post->pickling = $request->pickling;
         $post->marking = $request->marking;
         $post->marking_specify = $request->marking_specify;
+
         $post->aisi = $request->aisi;
         $post->aisi_other = $request->aisi_other;
+
         $post->materialCertBellow = $request->materialcertbellow;
         $post->design_params = $request->design_params;
         $post->ped_approval = $request->ped_approval;
+
         $post->connection1 = $request->connection1;
         $post->pn_ansi1 = $request->pn_ansi1;
+
         $post->connection2 = $request->connection2;
         $post->pn_ansi2 = $request->pn_ansi2;
+
         $post->material_cert_connections = $request->material_cert_connections;
-        $post->material_cert_request = $request->material_cert_request;//rename
+        $post->material_cert_request = $request->material_cert_request;
+
         $post->coating = $request->coating;
-        $post->coating_others = $request->coating_others;//rename
+        $post->coating_others = $request->coating_others;
+
         $post->working_pressure_min = $request->working_pressure_min;
         $post->working_pressure_max = $request->working_pressure_max;
+
         $post->design_pressure_min = $request->design_pressure_min;
         $post->design_pressure_max = $request->design_pressure_max;
-        $post->working_temp_min =   $request->working_temp_min;
+
+        $post->working_temp_min = $request->working_temp_min;
         $post->working_temp_max = $request->working_temp_max;
+
         $post->design_temp_min = $request->design_temp_min;
         $post->design_temp_max = $request->design_temp_max;
+
         $post->application_medium = $request->application_medium;
+
         $post->axial_movement = $request->axial_movement;
         $post->axial_movement_min = $request->axial_movement_min;
         $post->axial_movement_max = $request->axial_movement_max;
+
         $post->lateral_movement = $request->lateral_movement;
         $post->lateral_movement_min = $request->lateral_movement_min;
         $post->lateral_movement_max = $request->lateral_movement_max;
+
         $post->angular_movement = $request->angular_movement;
         $post->angular_movement_min = $request->angular_movement_min;
         $post->angular_movement_max = $request->angular_movement_max;
+
         $post->cycle_life = $request->cycle_life;
+
         $post->liquid_dye_penetrant = $request->penetrant;
         $post->x_ray = $request->x_ray;
         $post->air_leakage = $request->air_leakage;
         $post->helium_leakage = $request->helium_leakage;
         $post->hydrostatic_pressure = $request->hydrostatic_pressure;
+
         $post->other_ndt = $request->Otherndt;
         $post->ndt_specify = $request->ndt_specify;
+
         $post->ppap = $request->ppap;
         $post->dimension_report = $request->dimension_report;
         $post->ndt_report = $request->ndt_report;
         $post->dimension3D = $request->dimension3D;
         $post->other_doc = $request->other_doc;
         $post->doc_specify = $request->doc_specify;
+
         $post->special_req = $request->special_req;
+
         $post->save();
+        
+        // 7. Prepare Google Sheet data
         $sheetData = [
-                    'form_type'=>'Enquiry Form',
-                    'name' => $request->name ?? $request->fullname ?? '',
-                    'product_name' => $request->product_name ?? '',
-                    'company_name' => $request->company_name ?? '', 
-                    'contact' => $request->contact ?? $request->mobile ?? '',
-                    'email' => $request->email ?? '',
-                    'country' => $request->country ?? '',
-                    'message' => $request->message ?? '',
-                    'date' => now()->format('Y-m-d H:i:s')
-                ];
-    
-        if ($post) {
-        $directory = public_path('enquiry_pdf');
-        if (!file_exists($directory)) {
-            mkdir($directory, 0777, true);
-        }
-        $pdf = Pdf::loadView('front.pdf.enquiry', ['data' => $post]);
-        $fileName = 'enquiry_' . Str::uuid() . '.pdf';
-        $filePath = $directory . '/' . $fileName;
-        $pdf->save($filePath);
-        $fileUrl = asset('public/enquiry_pdf/' . $fileName);
-        Mail::to(['sales@flexibel.ae'])->send(new EnquiryFormMail($request->all(), $fileUrl)
-        );
-        $response = Http::timeout(30)
+            'form_type' => 'Enquiry Form',
+            'name' => $validated['fullname'],
+            'product_name' => $request->product_name ?? '',
+            'company_name' => $validated['company_name'],
+            'contact' => $validated['contact'],
+            'email' => $validated['email'],
+            'country' => $validated['country'],
+            'message' => $request->message ?? '',
+            'date' => now()->format('Y-m-d H:i:s'),
+        ];
+
+        // 8. Generate PDF + Email + Google Sheet
+        try
+        {
+            $directory = public_path('enquiry_pdf');
+
+            if (!file_exists($directory))
+            {
+                mkdir($directory, 0777, true);
+            }
+
+            $pdf = Pdf::loadView(
+                'front.pdf.enquiry',
+                ['data' => $post]
+            );
+
+            $fileName = 'enquiry_' . Str::uuid() . '.pdf';
+            $filePath = $directory . '/' . $fileName;
+            $pdf->save($filePath);
+            $fileUrl = asset('public/enquiry_pdf/' . $fileName);
+
+            Mail::to([
+                'sales@flexibel.ae'
+            ])->send(
+                new EnquiryFormMail(
+                    $request->all(),
+                    $fileUrl
+                )
+            );
+
+            $response = Http::timeout(30)
                 ->withHeaders([
                     'Content-Type' => 'application/json'
                 ])
-                ->post('https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec', $sheetData);
- 
-            // Check response
-            if ($response->successful()) {
+                ->post(
+                    'https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec',
+                    $sheetData
+                );
+
+            if ($response->successful())
+            {
                 $responseData = $response->json();
-                if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                    Log::info('Data successfully sent to Google Sheets', [
-                        'email' => $request->email,
+                if (
+                    isset($responseData['status']) &&
+                    $responseData['status'] === 'success'
+                ) {
+                    Log::info('Enquiry successfully sent to Google Sheets', [
+                        'email' => $validated['email'],
                         'response' => $responseData
                     ]);
-                                return redirect()->route('thank-you')->with(['carrername' => $request->partnername]);
- 
-                } else {
+                } 
+                else
+                {
                     Log::warning('Google Sheets API returned error', [
                         'response' => $responseData,
-                        'email' => $request->email
+                        'email' => $validated['email']
                     ]);
-                    return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
- 
                 }
             } else {
                 Log::error('Google Sheets API request failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
-                    'email' => $request->email
+                    'email' => $validated['email']
                 ]);
-                    return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
- 
             }
-        // return redirect()->route('thank-you')->with(['carrername' => $request->partnername]);
-        } else {
-            return redirect()->back()->with('error', 'Failed to submit the form. Try again.');
+
+            // 9. Final redirect
+            return redirect()
+                ->route('thank-you')
+                ->with([
+                    'success' => 'Your enquiry has been submitted successfully.'
+                ]);
+        } catch (\Exception $e) {
+            Log::error(
+                'Enquiry form error: ' . $e->getMessage()
+            );
+
+            return back()
+                ->withInput()
+                ->with('error', 'Something went wrong. Please try again.');
         }
     }
+
     public function productsByCategory($category)
     {
-       
         $category = ProductCategory::where('url', $category)->firstOrFail();
         $metatitle= $category->meta_title;
         $metadescription= $category->meta_description;
@@ -755,6 +1194,7 @@ class DashboardController extends Controller
         # dd($products);
         return view('front.products-by-category', compact('products', 'category','metatitle','metadescription'));
     }
+
     public function metallicproductsByCategory()
     {
        
@@ -765,6 +1205,7 @@ class DashboardController extends Controller
         # dd($products);
         return view('front.products-by-category', compact('products', 'category','metatitle','metadescription'));
     }
+
     public function ProductDetail($url=null)
     {
        
@@ -780,7 +1221,6 @@ class DashboardController extends Controller
         $metadescription = "Find diverse opportunities we provide across various departments, ensuring you can find a career path that excites and challenges you.";
         
         $job_categories = JobCategory::whereNull('deleted_at')->get();
-        
         $jobs = Job::whereNull('deleted_at')
             ->orderBy('jobcategory_id')
             ->get()
@@ -789,8 +1229,8 @@ class DashboardController extends Controller
         return view('front.current-vacancies',compact('metatitle','metadescription','jobs','job_categories'));
     }
     
-    public function VacanciesDetails($url) {
-        
+    public function VacanciesDetails($url)
+    {
         $job = Job::where('url', $url)->whereNull('deleted_at')->firstOrFail();
         $metatitle = $job->meta_title;
         $metadescription =  $job->meta_description;
@@ -807,11 +1247,12 @@ class DashboardController extends Controller
     
     public function JobDetailsSubmit(Request $request)
     {
-        // 🔒 Honeypot check
-    if (!empty($request->website_url)) {
-        // If the hidden field is filled → block as spam
-        return back()->with('error', 'Invalid form submission.');
-    }
+        // Honeypot check
+        if (!empty($request->website_url))
+        {
+            return back()->with('error', 'Invalid form submission.');
+        }
+
         $validated = $request->validate([
             'fullname' => 'required|string',
             'year' => 'required|numeric',
@@ -823,32 +1264,33 @@ class DashboardController extends Controller
         ]);
 
         $resumePath = null;
-        if ($request->hasFile('resume')) {
+        if ($request->hasFile('resume'))
+        {
             $resumeFile = $request->file('resume');
             $resumeName = $resumeFile->getClientOriginalName();
             $resumeFile->move(public_path('resume_uploads'), $resumeName);
             $resumePath =  'resume_uploads/' .$resumeName;
         }
-        
-        
+                
         JobForm::create([
-        'fullname' => $validated['fullname'],
-        'year' => $validated['year'],
-        'phone' => $validated['phone'],
-        'email' => $validated['email'],
-        'message' => $validated['message'],
-        'resume' => $resumePath,
-        'applied_for' => $validated['applied_for'],
-    ]);
+            'fullname' => $validated['fullname'],
+            'year' => $validated['year'],
+            'phone' => $validated['phone'],
+            'email' => $validated['email'],
+            'message' => $validated['message'],
+            'resume' => $resumePath,
+            'applied_for' => $validated['applied_for'],
+        ]);
+
         $jobData = [
-        'fullname' => $validated['fullname'],
-        'year' => $validated['year'],
-        'phone' => $validated['phone'],
-        'email' => $validated['email'],
-        'message' => $validated['message'],
-        'resume' => $resumePath,
-        'applied_for' => $validated['applied_for'],
-    ];
+            'fullname' => $validated['fullname'],
+            'year' => $validated['year'],
+            'phone' => $validated['phone'],
+            'email' => $validated['email'],
+            'message' => $validated['message'],
+            'resume' => $resumePath,
+            'applied_for' => $validated['applied_for'],
+        ];
 
         try {
             Mail::to($validated['email'])->send(new SendCurrentVacancyMailToUser());
@@ -857,105 +1299,183 @@ class DashboardController extends Controller
         } catch (\Exception $e) {
             Log::error('Email sending failed: ' . $e->getMessage());
             return back()->with('error', 'Failed to send the email. Please try again later.');
-        }
-        
+        }        
         //return redirect()->route('thank-you')->with('success', 'Form submitted successfully!');
-       
     }
     
     public function CatalogueForm()
     { 
         return view('front.catalogue');
     }
+
     public function CatalogueSubmit(Request $request)
     {
-        // 🔒 Honeypot check
-    if (!empty($request->website_url)) {
-        // If the hidden field is filled → block as spam
-        return back()->with('error', 'Invalid form submission.');
-    }
-        $validated = $request->validate([
-            'fullname' => 'required|string',
-            'company_name' => 'required',
-            'phone' => 'required|string|max:30',
-            'email' => 'required|email',
-            'message' => 'required|string',
-            //'g-recaptcha-response' => 'required', 
-        ]);
-        
-        $catalogueData = [
-            'fullname' => $validated['fullname'],
-            'company_name' => $validated['company_name'],
-            'phone' => $validated['phone'],
-            'email' => $validated['email'],
-            'message' => $validated['message'],
-        ];
-        Catalogue::create($catalogueData);
-            $sheetData = [
-                    'form_type'=>'Catelogue Form',
-                    'name' => $request->name ?? $request->fullname ?? '',
-                    'product_name' => $request->product_name ?? '',
-                    'company_name' => $request->company_name ?? '', 
-                    'contact' => $request->phone ?? '',
-                    'email' => $request->email ?? '',
-                    'country' => $request->country ?? '',
-                    'message' => $request->message ?? '',
-                    'date' => now()->format('Y-m-d H:i:s')
-                ];
-                try {
-            // 1️⃣ Send data to Google Sheets
-            $response = Http::timeout(30)
-                ->withHeaders(['Content-Type' => 'application/json'])
-                ->post('https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec', $sheetData);
-        
-            Log::info('Google Sheet Response', ['status' => $response->status(), 'body' => $response->body()]);
-        
-            // 2️⃣ Then send mail
-            Mail::to($validated['email'])->send(new SendCatalogueMailToUser());
-            Mail::to(['sales@flexibel.ae'])
-                ->send(new SendCatalogueMailToAdmin($catalogueData));
-        
-            // 3️⃣ Then redirect
-            return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.')->with('form_source', 'catalogue');
-        
-        } catch (\Exception $e) {
-            Log::error('CatalogueSubmit failed: ' . $e->getMessage());
-            return back()->with('error', 'Something went wrong, please try again.');
+        // 1. Honeypot check
+        if ($request->filled('website_url'))
+        {
+            Log::warning('Catalogue form blocked: honeypot triggered', [
+                'ip' => $request->ip(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'website_url' => 'Invalid form submission.'
+                ]);
         }
 
-        $response = Http::timeout(30)
+        // 2. Disposable / temporary email domains
+        $disposableDomains = [
+            'mailinator.com',
+            '10minutemail.com',
+            'guerrillamail.com',
+            'tempmail.com',
+            'temp-mail.org',
+            'throwawaymail.com',
+            'maildrop.cc',
+            'dispostable.com',
+            'getairmail.com',
+            'moakt.com',
+            'spamgourmet.com',
+            'yopmail.com',
+            'sharklasers.com',
+            'mailnesia.com',
+            'fakemail.net',
+            'emailondeck.com',
+            'trashmail.com',
+            'mintemail.com',
+            'mytemp.email',
+            'mailboxvip.org',
+            'usmailerbox.org',
+            'mail220v.org',
+            'alquilerjetskitf.com',
+            'aimusicfixer.com'
+        ];
+
+        $email = strtolower(trim($request->input('email', '')));
+        $emailDomain = '';
+
+        if (str_contains($email, '@'))
+        {
+            $emailDomain = substr(strrchr($email, '@'), 1);
+        }
+
+        if ($emailDomain && in_array($emailDomain, $disposableDomains))
+        {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Please use a valid email address.'
+                ]);
+        }
+
+        // 3. Rate limiting
+        $key = 'catalogue-form:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($key, 3))
+        {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Too many submissions. Please try again later.'
+                ]);
+        }
+
+        // 4. Server-side validation
+        $validated = $request->validate([
+            'fullname' => [
+                'required',
+                'string',
+                'min:2',
+                'max:50'
+            ],
+            'company_name' => [
+                'required',
+                'string',
+                'max:50'
+            ],
+            'phone' => [
+                'required',
+                'string',
+                'digits_between:10,15'
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:50'
+            ],
+            'message' => [
+                'required',
+                'string',
+                'max:1000'
+            ],
+        ]);
+
+        RateLimiter::hit($key, 600);
+        try
+        {
+            // 5. Save to database
+            $catalogueData = [
+                'fullname' => $validated['fullname'],
+                'company_name' => $validated['company_name'],
+                'phone' => $validated['phone'],
+                'email' => $validated['email'],
+                'message' => $validated['message'],
+            ];
+
+            Catalogue::create($catalogueData);
+
+            // 6. Google Sheet data
+            $sheetData = [
+                'form_type' => 'Catelogue Form',
+                'name' => $validated['fullname'],
+                'product_name' => $request->product_name ?? '',
+                'company_name' => $validated['company_name'],
+                'contact' => $validated['phone'],
+                'email' => $validated['email'],
+                'country' => $request->country ?? '',
+                'message' => $validated['message'],
+                'date' => now()->format('Y-m-d H:i:s')
+            ];
+
+            // 7. Send to Google Sheets
+            $response = Http::timeout(30)
                 ->withHeaders([
                     'Content-Type' => 'application/json'
                 ])
-                ->post('https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec', $sheetData);
- 
-            // Check response
-            if ($response->successful()) {
-                $responseData = $response->json();
-                if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                    Log::info('Data successfully sent to Google Sheets', [
-                        'email' => $request->email,
-                        'response' => $responseData
-                    ]);
-                                return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.')->with('form_source', 'catalogue');
- 
-                } else {
-                    Log::warning('Google Sheets API returned error', [
-                        'response' => $responseData,
-                        'email' => $request->email
-                    ]);
-                    return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.')->with('form_source', 'catalogue');
- 
-                }
-            } else {
-                Log::error('Google Sheets API request failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                    'email' => $request->email
-                ]);
-                    return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.')->with('form_source', 'catalogue');
- 
-            }
+                ->post(
+                    'https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec',
+                    $sheetData
+                );
+
+            Log::info('Google Sheet Response', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
+            // 8. Send email to user
+            Mail::to($validated['email'])
+                ->send(new SendCatalogueMailToUser());
+
+            // 9. Send email to admin
+            Mail::to(['sales@flexibel.ae'])
+                ->send(new SendCatalogueMailToAdmin($catalogueData));
+
+            // 10. Redirect
+            return redirect()
+                ->route('thank-you')
+                ->with('success', 'Your message has been sent successfully.')
+                ->with('form_source', 'catalogue');
+        } catch (\Exception $e) {
+            Log::error('CatalogueSubmit failed', [
+                'message' => $e->getMessage(),
+                'email' => $request->email,
+                'ip' => $request->ip(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Something went wrong, please try again.');
+        }
     }
     
     public function TestimonialForm()
@@ -965,83 +1485,187 @@ class DashboardController extends Controller
     
     public function TestimonialSubmit(Request $request)
     {
-        // 🔒 Honeypot check
-    if (!empty($request->website_url)) {
-        // If the hidden field is filled → block as spam
-        return back()->with('error', 'Invalid form submission.');
-    }
+        // 1. Honeypot check
+        if ($request->filled('website_url'))
+        {
+            Log::warning('Testimonial form blocked: honeypot triggered', [
+                'ip' => $request->ip(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'website_url' => 'Invalid form submission.'
+                ]);
+        }
+
+        // 2. Disposable / temporary email domains
+        $disposableDomains = [
+            'mailinator.com',
+            '10minutemail.com',
+            'guerrillamail.com',
+            'tempmail.com',
+            'temp-mail.org',
+            'throwawaymail.com',
+            'maildrop.cc',
+            'dispostable.com',
+            'getairmail.com',
+            'moakt.com',
+            'spamgourmet.com',
+            'yopmail.com',
+            'sharklasers.com',
+            'mailnesia.com',
+            'fakemail.net',
+            'emailondeck.com',
+            'trashmail.com',
+            'mintemail.com',
+            'mytemp.email',
+            'mailboxvip.org',
+            'usmailerbox.org',
+            'mail220v.org',
+            'alquilerjetskitf.com',
+            'aimusicfixer.com'
+        ];
+
+        $email = strtolower(trim($request->input('email', '')));
+        $emailDomain = '';
+
+        if (str_contains($email, '@'))
+        {
+            $emailDomain = substr(strrchr($email, '@'), 1);
+        }
+
+        if ($emailDomain && in_array($emailDomain, $disposableDomains))
+        {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Please use a valid email address.'
+                ]);
+        }
+
+        // 3. reCAPTCHA check
+        $captcha = $request->input('g-recaptcha-response');
+        if (!$captcha)
+        {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'g-recaptcha-response' => 'Please verify that you are not a robot.'
+                ]);
+        }
+
+        // 4. Rate limiting
+        $key = 'testimonial-form:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($key, 3))
+        {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Too many submissions. Please try again later.'
+                ]);
+        }
+
+        // 5. Server-side validation
         $validated = $request->validate([
-            'fullname' => 'required|string',
-            'mobile' => 'required|string|max:15',
-            'email' => 'required|email',
-            'message' => 'required|string',
-            'country' => 'required|string',
-           
-            //'g-recaptcha-response' => 'required', 
+            'fullname' => [
+                'required',
+                'string',
+                'min:2',
+                'max:50'
+            ],
+            'mobile' => [
+                'required',
+                'string',
+                'digits_between:10,15'
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:60'
+            ],
+            'message' => [
+                'required',
+                'string',
+                'max:1000'
+            ],
+            'country' => [
+                'required',
+                'string'
+            ],
+            'g-recaptcha-response' => [
+                'required'
+            ],
         ]);
 
-        $testimonialData = [
-            'fullname' => $validated['fullname'],
-            'mobile' => $validated['mobile'],
-            'email' => $validated['email'],
-            'message' => $validated['message'],
-            'country' => $validated['country'],
-        ];
-        TestimonialForm::create($testimonialData);
-        $sheetData = [
-                    'form_type'=>'Testimonial Form',
-                    'name' => $request->name ?? $request->fullname ?? '',
-                    'product_name' => $request->product_name ?? '',
-                    'company_name' => $request->company_name ?? '', 
-                    'contact' => $request->contact ?? $request->mobile ?? '',
-                    'email' => $request->email ?? '',
-                    'country' => $request->country ?? '',
-                    'message' => $request->message ?? '',
-                    'date' => now()->format('Y-m-d H:i:s')
-                ];
-        try {
-            Mail::to($validated['email'])->send(new SendTestimonialMailToUser());
-            Mail::to(['sales@flexibel.ae'])->send(new SendTestimonialMailToAdmin($testimonialData));
-          return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
-        } catch (\Exception $e) {
-            Log::error('Email sending failed: ' . $e->getMessage());
-            return back()->with('error', 'Failed to send the email. Please try again later.');
-        }
-        $response = Http::timeout(30)
+        RateLimiter::hit($key, 600);
+
+        try
+        {
+            // 6. Save testimonial
+            $testimonialData = [
+                'fullname' => $validated['fullname'],
+                'mobile' => $validated['mobile'],
+                'email' => $validated['email'],
+                'message' => $validated['message'],
+                'country' => $validated['country'],
+            ];
+
+            TestimonialForm::create($testimonialData);
+
+            // 7. Prepare Google Sheet data
+            $sheetData = [
+                'form_type' => 'Testimonial Form',
+                'name' => $validated['fullname'],
+                'product_name' => $request->product_name ?? '',
+                'company_name' => $request->company_name ?? '',
+                'contact' => $validated['mobile'],
+                'email' => $validated['email'],
+                'country' => $validated['country'],
+                'message' => $validated['message'],
+                'date' => now()->format('Y-m-d H:i:s')
+            ];
+
+            // 8. Send data to Google Sheets
+            $response = Http::timeout(30)
                 ->withHeaders([
                     'Content-Type' => 'application/json'
                 ])
-                ->post('https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec', $sheetData);
- 
-            // Check response
-            if ($response->successful()) {
-                $responseData = $response->json();
-                if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                    Log::info('Data successfully sent to Google Sheets', [
-                        'email' => $request->email,
-                        'response' => $responseData
-                    ]);
-                                return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
- 
-                } else {
-                    Log::warning('Google Sheets API returned error', [
-                        'response' => $responseData,
-                        'email' => $request->email
-                    ]);
-                    return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
- 
-                }
-            } else {
-                Log::error('Google Sheets API request failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                    'email' => $request->email
-                ]);
-                    return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
- 
-            }
-        
-        //return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
+                ->post(
+                    'https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec',
+                    $sheetData
+                );
+
+            Log::info('Testimonial Google Sheet Response', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
+            // 9. Send email to user
+            Mail::to($validated['email'])
+                ->send(new SendTestimonialMailToUser());
+
+            // 10. Send email to admin
+            Mail::to(['sales@flexibel.ae'])
+                ->send(new SendTestimonialMailToAdmin($testimonialData));
+
+            // 11. Redirect
+            return redirect()
+                ->route('thank-you')
+                ->with('success', 'Your message has been sent successfully.');
+
+        } catch (\Exception $e) {
+
+            Log::error('TestimonialSubmit failed', [
+                'message' => $e->getMessage(),
+                'email' => $request->email,
+                'ip' => $request->ip(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to send the email. Please try again later.');
+        }
     }
     
     public function CaseStudyForm()
@@ -1051,88 +1675,192 @@ class DashboardController extends Controller
     
     public function CaseStudySubmit(Request $request)
     {
-        // 🔒 Honeypot check
-    if (!empty($request->website_url)) {
-        // If the hidden field is filled → block as spam
-        return back()->with('error', 'Invalid form submission.');
-    }
+        // 1. Honeypot check
+        if ($request->filled('website_url'))
+        {
+            Log::warning('Case Study form blocked: honeypot triggered', [
+                'ip' => $request->ip(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'website_url' => 'Invalid form submission.'
+                ]);
+        }
+
+        // 2. Disposable / temporary email domains
+        $disposableDomains = [
+            'mailinator.com',
+            '10minutemail.com',
+            'guerrillamail.com',
+            'tempmail.com',
+            'temp-mail.org',
+            'throwawaymail.com',
+            'maildrop.cc',
+            'dispostable.com',
+            'getairmail.com',
+            'moakt.com',
+            'spamgourmet.com',
+            'yopmail.com',
+            'sharklasers.com',
+            'mailnesia.com',
+            'fakemail.net',
+            'emailondeck.com',
+            'trashmail.com',
+            'mintemail.com',
+            'mytemp.email',
+            'mailboxvip.org',
+            'usmailerbox.org',
+            'mail220v.org',
+            'alquilerjetskitf.com',
+            'aimusicfixer.com'
+        ];
+
+        $email = strtolower(trim($request->input('email', '')));
+        $emailDomain = '';
+
+        if (str_contains($email, '@'))
+        {
+            $emailDomain = substr(strrchr($email, '@'), 1);
+        }
+
+        if ($emailDomain && in_array($emailDomain, $disposableDomains))
+        {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Please use a valid email address.'
+                ]);
+        }
+
+        // 3. reCAPTCHA check
+        $captcha = $request->input('g-recaptcha-response');
+
+        if (!$captcha) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'g-recaptcha-response' => 'Please verify that you are not a robot.'
+                ]);
+        }
+
+        // 4. Rate limiting
+        $key = 'case-study-form:' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 3))
+        {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Too many submissions. Please try again later.'
+                ]);
+        }
+
+        // 5. Server-side validation
         $validated = $request->validate([
-            'fullname' => 'required|string',
-            'mobile' => 'required|string|max:15',
-            'email' => 'required|email',
-            'message' => 'required|string',
-            'country' => 'required|string',
-           
-            //'g-recaptcha-response' => 'required', 
+            'fullname' => [
+                'required',
+                'string',
+                'min:2',
+                'max:50'
+            ],
+            'mobile' => [
+                'required',
+                'string',
+                'digits_between:10,15'
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:60'
+            ],
+            'message' => [
+                'required',
+                'string',
+                'max:1000'
+            ],
+            'country' => [
+                'required',
+                'string'
+            ],
+            'g-recaptcha-response' => [
+                'required'
+            ],
         ]);
 
-        $casestudyData = [
-            'fullname' => $validated['fullname'],
-            'mobile' => $validated['mobile'],
-            'email' => $validated['email'],
-            'message' => $validated['message'],
-            'country' => $validated['country'],
-        ];
-        CaseStudyForm::create($casestudyData);
-        $sheetData = [
-                    'form_type'=>'Casestudy Form',
-                    'name' => $request->name ?? $request->fullname ?? '',
-                    'product_name' => $request->product_name ?? '',
-                    'company_name' => $request->company_name ?? '', 
-                    'contact' => $request->contact ?? $request->mobile ?? '',
-                    'email' => $request->email ?? '',
-                    'country' => $request->country ?? '',
-                    'message' => $request->message ?? '',
-                    'date' => now()->format('Y-m-d H:i:s')
-                ];
+        RateLimiter::hit($key, 600);
+
         try {
-            Mail::to($validated['email'])->send(new SendCaseStudyMailToUser());
-            Mail::to(['sales@flexibel.ae'])->send(new SendCaseStudyMailToAdmin($casestudyData));
-          return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
-        } catch (\Exception $e) {
-            Log::error('Email sending failed: ' . $e->getMessage());
-            return back()->with('error', 'Failed to send the email. Please try again later.');
-        }
-        $response = Http::timeout(30)
+            // 6. Save case study enquiry
+            $casestudyData = [
+                'fullname' => $validated['fullname'],
+                'mobile' => $validated['mobile'],
+                'email' => $validated['email'],
+                'message' => $validated['message'],
+                'country' => $validated['country'],
+            ];
+
+            CaseStudyForm::create($casestudyData);
+
+            // 7. Prepare Google Sheet data
+            $sheetData = [
+                'form_type' => 'Casestudy Form',
+                'name' => $validated['fullname'],
+                'product_name' => $request->product_name ?? '',
+                'company_name' => $request->company_name ?? '',
+                'contact' => $validated['mobile'],
+                'email' => $validated['email'],
+                'country' => $validated['country'],
+                'message' => $validated['message'],
+                'date' => now()->format('Y-m-d H:i:s')
+            ];
+
+            // 8. Send data to Google Sheets
+            $response = Http::timeout(30)
                 ->withHeaders([
                     'Content-Type' => 'application/json'
                 ])
-                ->post('https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec', $sheetData);
- 
-            // Check response
-            if ($response->successful()) {
-                $responseData = $response->json();
-                if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                    Log::info('Data successfully sent to Google Sheets', [
-                        'email' => $request->email,
-                        'response' => $responseData
-                    ]);
-                                return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
- 
-                } else {
-                    Log::warning('Google Sheets API returned error', [
-                        'response' => $responseData,
-                        'email' => $request->email
-                    ]);
-                    return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
- 
-                }
-            } else {
-                Log::error('Google Sheets API request failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                    'email' => $request->email
-                ]);
-                    return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
- 
-            }
-        
-       // return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
+                ->post(
+                    'https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec',
+                    $sheetData
+                );
+
+            Log::info('Case Study Google Sheet Response', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
+            // 9. Send email to user
+            Mail::to($validated['email'])
+                ->send(new SendCaseStudyMailToUser());
+
+            // 10. Send email to admin
+            Mail::to(['sales@flexibel.ae'])
+                ->send(new SendCaseStudyMailToAdmin($casestudyData));
+
+            // 11. Redirect
+            return redirect()
+                ->route('thank-you')
+                ->with('success', 'Your message has been sent successfully.');
+
+        } catch (\Exception $e) {
+
+            Log::error('CaseStudySubmit failed', [
+                'message' => $e->getMessage(),
+                'email' => $request->email,
+                'ip' => $request->ip(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to send the email. Please try again later.');
+        }
     }
+
     public function whatsaapinquiry(Request $request)
     {
         WhatsappInquiry::create([
-           
             'number'  => $request->number,
             'message'  => $request->message,
         ]);

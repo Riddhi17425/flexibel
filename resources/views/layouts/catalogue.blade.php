@@ -12,73 +12,80 @@
                     <!--<p>Fill out the form below with your details, and we’ll get back to you as soon as possible.</p>-->
                     <form id="catalogueform" action="{{route('catalogue.submit')}}" method="post" enctype="multipart/form-data">
                       @csrf
-                    <div class="row">
-                        <div style="display:none;">
-                            <input type="text" name="website_url" id="website_url" value="">
-                        </div>
-                        <div class="col-md-12 mb-lg-5 mb-md-3 mb-4">
-                            <label>Full Name * </label>
-                            <input type="text"  id="c_fullname" name="fullname" maxlength="50"
-                                oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trimStart();"
-                                class="form-control" placeholder="Enter your full name">
-                            <small id="c_fullnameError" class="text-danger"></small>
-                        </div>
-                        <div class="col-md-12 mb-md-5 mb-md-3 mb-4">
-                            <label>Company Name * </label>
-                            <input type="text" id="c_company_name" name="company_name" maxlength="50"
-                                oninput="this.value = this.value.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, ' ').trimStart();"
-                                class="form-control" placeholder="Enter your company name">
-                            <small id="c_company_nameError" class="text-danger"></small>
-                        </div>
-                        <div class="col-md-12 mb-lg-5 mb-md-3 mb-4">
-                            <label>Contact Number *</label>
-                            <input type="text" id="c_phone" name="phone" minlength="10" maxlength="15" 
-                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 15);"
-                                class="form-control" placeholder="Enter your contact number" pattern="\d{10,15}" title="Contact number must be between 10 to 15 digits">
-                             <small id="c_phoneError" class="text-danger"></small>
-                        </div>
-                        <div class="col-md-12 mb-lg-5 mb-md-3 mb-4">
-                            <label>Email Address*</label>
-                            <input type="email" id="c_email" name="email" maxlength="50" class="form-control" placeholder="Enter your email ID">
-                            <small id="c_emailError" class="text-danger"></small>
-                        </div>
-                        <div class="col-md-12 mb-lg-5 mb-md-3 mb-4">
-                            <label>Message *</label>
-                            <input type="text" id="c_message" name="message" class="form-control" placeholder="Enter your message">
-                            <small id="c_messageError" class="text-danger"></small>
-                        </div>
-                        <!--<div class="col-md-12 mb-lg-5 mb-md-3">-->
-                        <!--    <label for="uploadResume">Upload Resume *:</label>-->
-                        <!--    <label class="custom-file-upload">-->
-                        <!--        <input type="file" id="c_resume" name="resume" accept=".pdf,.doc,.docx ,.svg, .png">-->
-                        <!--        <p>Attach Your Resume In PDF, Word Format</p>-->
-                        <!--        <p><small>Max Size: 5 Mb</small></p>-->
-                                
-                        <!--    </label>-->
-                        <!--    <small id="c_resumeError" class="text-danger"></small>-->
-                        <!--</div>-->
-                        <!-- <div class="col-md-12 mb-lg-5 mb-md-3">
-                            <label>Captcha *</label>
-                            <input type="text" class="form-control" placeholder="Enter captcha code">
-                        </div> -->
-                        <div class="form-group mb-4">
-                            <div id="c_recaptcha" style="display: none;"></div>
-                            <small id="c_recaptcha_error" class="text-danger"></small>
-                            @error('g-recaptcha-response')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-                        </div>
-                        <div class="col-lg-3">
-                            <button type="submit" id="submit" class="prod_btn">
-                                Submit
-                                <span class="svg ms-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="14" viewBox="0 0 13 14" fill="none">
-                                        <path d="M1.5 13L11.5 1M11.5 1H1.5M11.5 1V11.9091" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                                    </svg>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
+                      <div class="row">
+                          <div style="position:absolute; left:-9999px; opacity:0; height:0; overflow:hidden;">
+                            <input
+                                type="text"
+                                name="website_url"
+                                id="website_url"
+                                value=""
+                                tabindex="-1"
+                                aria-hidden="true"
+                            >
+                          </div>
+                          <div class="col-md-12 mb-lg-5 mb-md-3 mb-4">
+                              <label>Full Name * </label>
+                              <input type="text"  id="c_fullname" name="fullname" maxlength="50"
+                                  oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trimStart();"
+                                  class="form-control" placeholder="Enter your full name">
+                              <small id="c_fullnameError" class="text-danger"></small>
+                          </div>
+                          <div class="col-md-12 mb-md-5 mb-md-3 mb-4">
+                              <label>Company Name * </label>
+                              <input type="text" id="c_company_name" name="company_name" maxlength="50"
+                                  oninput="this.value = this.value.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, ' ').trimStart();"
+                                  class="form-control" placeholder="Enter your company name">
+                              <small id="c_company_nameError" class="text-danger"></small>
+                          </div>
+                          <div class="col-md-12 mb-lg-5 mb-md-3 mb-4">
+                              <label>Contact Number *</label>
+                              <input type="text" id="c_phone" name="phone" minlength="10" maxlength="15" 
+                                  oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 15);"
+                                  class="form-control" placeholder="Enter your contact number" pattern="\d{10,15}" title="Contact number must be between 10 to 15 digits">
+                              <small id="c_phoneError" class="text-danger"></small>
+                          </div>
+                          <div class="col-md-12 mb-lg-5 mb-md-3 mb-4">
+                              <label>Email Address*</label>
+                              <input type="email" id="c_email" name="email" maxlength="50" class="form-control" placeholder="Enter your email ID">
+                              <small id="c_emailError" class="text-danger"></small>
+                          </div>
+                          <div class="col-md-12 mb-lg-5 mb-md-3 mb-4">
+                              <label>Message *</label>
+                              <input type="text" id="c_message" name="message" class="form-control" placeholder="Enter your message">
+                              <small id="c_messageError" class="text-danger"></small>
+                          </div>
+                          <!--<div class="col-md-12 mb-lg-5 mb-md-3">-->
+                          <!--    <label for="uploadResume">Upload Resume *:</label>-->
+                          <!--    <label class="custom-file-upload">-->
+                          <!--        <input type="file" id="c_resume" name="resume" accept=".pdf,.doc,.docx ,.svg, .png">-->
+                          <!--        <p>Attach Your Resume In PDF, Word Format</p>-->
+                          <!--        <p><small>Max Size: 5 Mb</small></p>-->
+                                  
+                          <!--    </label>-->
+                          <!--    <small id="c_resumeError" class="text-danger"></small>-->
+                          <!--</div>-->
+                          <!-- <div class="col-md-12 mb-lg-5 mb-md-3">
+                              <label>Captcha *</label>
+                              <input type="text" class="form-control" placeholder="Enter captcha code">
+                          </div> -->
+                          <div class="form-group mb-4">
+                              <div id="c_recaptcha" style="display: none;"></div>
+                              <small id="c_recaptcha_error" class="text-danger"></small>
+                              @error('g-recaptcha-response')
+                                  <small class="text-danger">{{ $message }}</small>
+                              @enderror
+                          </div>
+                          <div class="col-lg-3">
+                              <button type="submit" id="submit" class="prod_btn">
+                                  Submit
+                                  <span class="svg ms-2">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="14" viewBox="0 0 13 14" fill="none">
+                                          <path d="M1.5 13L11.5 1M11.5 1H1.5M11.5 1V11.9091" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                      </svg>
+                                  </span>
+                              </button>
+                          </div>
+                      </div>
                     </form>
                 </div>
             </div>

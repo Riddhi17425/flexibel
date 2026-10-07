@@ -11,8 +11,15 @@
            <form id="casestudyform" action="{{route('casestudy.submit')}}" method="post" enctype="multipart/form-data">
             @csrf
             <div class="row">
-                <div style="display:none;">
-                    <input type="text" name="website_url" id="website_url" value="">
+                <div style="position:absolute; left:-9999px; opacity:0; height:0; overflow:hidden;">
+                  <input
+                      type="text"
+                      name="website_url"
+                      id="website_url"
+                      value=""
+                      tabindex="-1"
+                      aria-hidden="true"
+                  >
                 </div>
               <div class="col-md-12 mb-lg-4 mb-md-3 mb-4">
                 <label>Name *</label>
