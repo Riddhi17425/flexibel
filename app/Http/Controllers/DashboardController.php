@@ -497,6 +497,34 @@ class DashboardController extends Controller
                 ]);
         }
 
+        // Rate limiting
+        $key = 'contact-form:' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+            return back()
+                ->withErrors([
+                    'email' => 'Too many attempts. Please try again in 10 minutes.',
+                ])
+                ->withInput();
+        }
+
+        // Count every submission attempt
+        RateLimiter::hit($key, 600);
+
+        $startedAt = $request->input('form_started_at');
+
+        if (
+            !is_numeric($startedAt) ||
+            (time() - (int) $startedAt) < 3 ||
+            (time() - (int) $startedAt) > 7200
+        ) {
+            return back()
+                ->withErrors([
+                    'email' => 'Unable to verify your submission. Please refresh the form and try again.',
+                ])
+                ->withInput();
+        }
+
         // 2. Check reCAPTCHA
         $captcha = $request->input('g-recaptcha-response');
 
@@ -608,9 +636,18 @@ class DashboardController extends Controller
 
             'g-recaptcha-response' => [
                 'required',
+                'captcha',
             ],
         ]);
 
+        // Validate the actual number of digits in the phone number.
+        $phoneDigits = preg_replace('/\D/', '', $validated['mobile']);
+
+        if (strlen($phoneDigits) < 8 || strlen($phoneDigits) > 15) {
+            throw ValidationException::withMessages([
+                'mobile' => 'Please enter a valid contact number.',
+            ]);
+        }
 
         // 6. Count the submission only after validation passes
         RateLimiter::hit($key, 600);
@@ -1324,6 +1361,18 @@ class DashboardController extends Controller
                 ]);
         }
 
+        $key = 'catalogue-form:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'email' => 'Too many submissions. Please try again later.'
+                ]);
+        }
+
+        // Count attempts, including invalid submissions.
+        RateLimiter::hit($key, 600);
+
         // 2. Disposable / temporary email domains
         $disposableDomains = [
             'mailinator.com',
@@ -1381,36 +1430,40 @@ class DashboardController extends Controller
         }
 
         // 4. Server-side validation
+        
+        // Server-side validation
         $validated = $request->validate([
             'fullname' => [
                 'required',
                 'string',
                 'min:2',
-                'max:50'
+                'max:50',
+                'regex:/^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/',
             ],
             'company_name' => [
                 'required',
                 'string',
-                'max:50'
+                'max:50',
+                'regex:/^[a-zA-Z0-9]+(?:\s[a-zA-Z0-9]+)*$/',
             ],
             'phone' => [
                 'required',
                 'string',
-                'digits_between:10,15'
+                'regex:/^[0-9]{10,15}$/',
             ],
             'email' => [
                 'required',
                 'email',
-                'max:50'
+                'max:50',
             ],
             'message' => [
                 'required',
                 'string',
-                'max:1000'
+                'max:1000',
             ],
         ]);
 
-        RateLimiter::hit($key, 600);
+
         try
         {
             // 5. Save to database
