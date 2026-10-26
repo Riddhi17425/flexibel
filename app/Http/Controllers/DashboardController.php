@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -376,7 +375,7 @@ class DashboardController extends Controller
                     'Content-Type' => 'application/json'
                 ])
                 ->post(
-                    'https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec',
+                    'https://script.google.com/macros/s/AKfycbwfaZf-dge2a9rtvRPd0D1SCKHarK77pmxESctjrs_fq1iprG1_mXLFSAviuosNq4I0Xg/exec',
                     $sheetData
                 );
 
@@ -694,7 +693,7 @@ class DashboardController extends Controller
                     'Content-Type' => 'application/json'
                 ])
                 ->post(
-                    'https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec',
+                    'https://script.google.com/macros/s/AKfycbwfaZf-dge2a9rtvRPd0D1SCKHarK77pmxESctjrs_fq1iprG1_mXLFSAviuosNq4I0Xg/exec',
                     $sheetData
                 );
 
@@ -1174,7 +1173,7 @@ class DashboardController extends Controller
                     'Content-Type' => 'application/json'
                 ])
                 ->post(
-                    'https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec',
+                    'https://script.google.com/macros/s/AKfycbwfaZf-dge2a9rtvRPd0D1SCKHarK77pmxESctjrs_fq1iprG1_mXLFSAviuosNq4I0Xg/exec',
                     $sheetData
                 );
 
@@ -1496,7 +1495,7 @@ class DashboardController extends Controller
                     'Content-Type' => 'application/json'
                 ])
                 ->post(
-                    'https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec',
+                    'https://script.google.com/macros/s/AKfycbwfaZf-dge2a9rtvRPd0D1SCKHarK77pmxESctjrs_fq1iprG1_mXLFSAviuosNq4I0Xg/exec',
                     $sheetData
                 );
 
