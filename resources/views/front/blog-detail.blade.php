@@ -241,6 +241,112 @@ table tbody td:first-child {
         @endif
     </div>
 </section>
+
+{{-- START - DYNAMIC BLOGPOSTING SCHEMA --}}
+
+@php
+    $blogSchemaUrl = url('/blog/' . $blog_details->url);
+
+    // Blog description
+    $blogSchemaDescription = trim(
+        preg_replace(
+            '/\s+/',
+            ' ',
+            html_entity_decode(
+                strip_tags(
+                    $blog_details->meta_description
+                    ?? $blog_details->short_description
+                    ?? $blog_details->description
+                    ?? ''
+                ),
+                ENT_QUOTES | ENT_HTML5,
+                'UTF-8'
+            )
+        )
+    );
+
+    // Blog image
+    $blogSchemaImage = null;
+
+    if (!empty($blog_details->detail_image)) {
+        $blogSchemaImage = asset(
+            'public/admin/blogs/detail_image/' .
+            basename($blog_details->detail_image)
+        );
+    } elseif (!empty($blog_details->front_image)) {
+        $blogSchemaImage = asset(
+            'public/admin/blogs/front_image/' .
+            basename($blog_details->front_image)
+        );
+    }
+
+    // Dynamic BlogPosting Schema - preserve the original sequence
+    $blogSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'BlogPosting',
+
+        'mainEntityOfPage' => [
+            '@type' => 'WebPage',
+            '@id' => $blogSchemaUrl,
+        ],
+
+        'headline' => $blog_details->title,
+
+        'description' => $blogSchemaDescription,
+
+        'image' => $blogSchemaImage,
+
+        'author' => [
+            '@type' => 'Organization',
+            'name' => 'FLEXIBEL',
+            'url' => url('/'),
+        ],
+
+        'publisher' => [
+            '@type' => 'Organization',
+            'name' => 'FLEXIBEL',
+            'logo' => [
+                '@type' => 'ImageObject',
+                'url' => asset('public/front/images/head_logo.svg'),
+            ],
+        ],
+    ];
+
+    // Publication date
+    if (!empty($blog_details->date)) {
+        $blogSchema['datePublished'] =
+            \Carbon\Carbon::parse($blog_details->date)
+                ->startOfDay()
+                ->toIso8601String();
+    }
+
+    // Last modified date
+    if (!empty($blog_details->updated_at)) {
+        $blogSchema['dateModified'] =
+            \Carbon\Carbon::parse($blog_details->updated_at)
+                ->toIso8601String();
+    } elseif (!empty($blog_details->date)) {
+        $blogSchema['dateModified'] =
+            $blogSchema['datePublished'];
+    }
+@endphp
+
+<script type="application/ld+json">
+{!! json_encode(
+    $blogSchema,
+    JSON_PRETTY_PRINT |
+    JSON_UNESCAPED_SLASHES |
+    JSON_UNESCAPED_UNICODE |
+    JSON_HEX_TAG |
+    JSON_HEX_APOS |
+    JSON_HEX_AMP |
+    JSON_HEX_QUOT
+) !!}
+</script>
+
+{{-- END - DYNAMIC BLOGPOSTING SCHEMA --}}
+
+{{-- START - DYNAMIC FAQ SCHEMA --}}
 @if (!empty($blog_details->title_description) && count($blog_details->title_description) > 0)
 <script type="application/ld+json">
 {
@@ -261,5 +367,6 @@ table tbody td:first-child {
 }
 </script>
 @endif
+{{-- END - DYNAMIC FAQ SCHEMA --}}
 
 @include('layouts.footer')
