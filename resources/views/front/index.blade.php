@@ -1,6 +1,6 @@
 @include('layouts.header', [
     'og_image' => asset('public/front/images/hero_slide_4.png')
-    ])
+])
 
 @include('layouts.aside')
 @include('layouts.testimonial_form')
@@ -1070,7 +1070,7 @@
 @include('layouts.footer')
 <script type="application/ld+json">
 {
-  "@context": "https://schema.org",
+  "@@context": "https://schema.org",
   "@graph": [
     {
       "@type": "Organization",

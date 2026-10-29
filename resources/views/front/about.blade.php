@@ -332,7 +332,7 @@ Across EPC projects, shipyards, and process industries, the integrity of a pipin
 
 <script type="application/ld+json">
 {
-  "@context": "https://schema.org",
+  "@@context": "https://schema.org",
   "@graph": [
     {
       "@type": "AboutPage",
