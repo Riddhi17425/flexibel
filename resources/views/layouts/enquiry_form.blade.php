@@ -27,6 +27,27 @@
                             @csrf
                             <input type="hidden" name="form_source" value="Popup Inquiry">
 
+                            <input type="hidden" name="form_started_at" value="{{ time() }}">
+
+                            <!-- Honeypot: hidden from humans -->
+                            <div style="position:absolute; left:-9999px;" aria-hidden="true">
+                                <input type="text" name="website_url" tabindex="-1" autocomplete="off">
+                            </div>
+
+                            @if ($errors->any())
+                                <div class="alert alert-danger">
+                                    <ul class="mb-0">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+
+                            @if (session('error'))
+                                <div class="alert alert-danger">{{ session('error') }}</div>
+                            @endif
+
                             <!-- NAME -->
                             <div class="row">
                                 <div class="col-md-6 mb-3">

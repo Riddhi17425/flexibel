@@ -59,6 +59,7 @@ use Pdf;
 use App\Models\ProductInquiry;
 use App\Models\WhatsappInquiry;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\ValidationException;
 
 class DashboardController extends Controller
 {
@@ -484,162 +485,71 @@ class DashboardController extends Controller
     //         }
     // }
 
+
     public function submit(Request $request)
     {
-        // 1. Honeypot check
-        if ($request->filled('website_url'))
-        {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'website_url' => 'Invalid form submission.'
-                ]);
+        // 1. Honeypot (bots fill this hidden field)
+        if ($request->filled('website_url')) {
+            return back()->withInput()->withErrors([
+                'email' => 'Invalid form submission.',
+            ]);
         }
 
-        // Rate limiting
+        // 2. Rate limit: check only (counted after validation passes)
         $key = 'contact-form:' . $request->ip();
 
         if (RateLimiter::tooManyAttempts($key, 3)) {
-            return back()
-                ->withErrors([
-                    'email' => 'Too many attempts. Please try again in 10 minutes.',
-                ])
-                ->withInput();
+            $minutes = ceil(RateLimiter::availableIn($key) / 60);
+
+            return back()->withInput()->withErrors([
+                'email' => "Too many attempts. Please try again in {$minutes} minute(s).",
+            ]);
         }
 
-        // Count every submission attempt
-        RateLimiter::hit($key, 600);
-
+        // 3. Time check (form must be open for 3 seconds to 2 hours)
         $startedAt = $request->input('form_started_at');
+        $elapsed = is_numeric($startedAt) ? time() - (int) $startedAt : null;
 
-        if (
-            !is_numeric($startedAt) ||
-            (time() - (int) $startedAt) < 3 ||
-            (time() - (int) $startedAt) > 7200
-        ) {
-            return back()
-                ->withErrors([
-                    'email' => 'Unable to verify your submission. Please refresh the form and try again.',
-                ])
-                ->withInput();
+        if ($elapsed === null || $elapsed < 3 || $elapsed > 7200) {
+            return back()->withInput()->withErrors([
+                'email' => 'Unable to verify your submission. Please refresh the page and try again.',
+            ]);
         }
 
-        // 2. Check reCAPTCHA
-        $captcha = $request->input('g-recaptcha-response');
-
-        if (!$captcha)
-        {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'g-recaptcha-response' => 'Please verify that you are not a robot.'
-                ]);
-        }
-
-        // 3. Block disposable / temporary email domains
+        // 4. Block disposable emails
         $disposableDomains = [
-            'mailinator.com',
-            '10minutemail.com',
-            'guerrillamail.com',
-            'tempmail.com',
-            'temp-mail.org',
-            'throwawaymail.com',
-            'maildrop.cc',
-            'dispostable.com',
-            'getairmail.com',
-            'moakt.com',
-            'spamgourmet.com',
-            'yopmail.com',
-            'sharklasers.com',
-            'mailnesia.com',
-            'fakemail.net',
-            'emailondeck.com',
-            'trashmail.com',
-            'mintemail.com',
-            'mytemp.email',
-            'mailboxvip.org',
-            'usmailerbox.org',
-            'mail220v.org',
-            'alquilerjetskitf.com',
-            'aimusicfixer.com',
+            'mailinator.com', '10minutemail.com', 'guerrillamail.com', 'tempmail.com',
+            'temp-mail.org', 'throwawaymail.com', 'maildrop.cc', 'dispostable.com',
+            'getairmail.com', 'moakt.com', 'spamgourmet.com', 'yopmail.com',
+            'sharklasers.com', 'mailnesia.com', 'fakemail.net', 'emailondeck.com',
+            'trashmail.com', 'mintemail.com', 'mytemp.email', 'mailboxvip.org',
+            'usmailerbox.org', 'mail220v.org', 'alquilerjetskitf.com', 'aimusicfixer.com',
         ];
 
         $email = strtolower(trim($request->input('email', '')));
-        $emailDomain = '';
+        $emailDomain = str_contains($email, '@') ? substr(strrchr($email, '@'), 1) : '';
 
-        if (str_contains($email, '@'))
-        {
-            $emailDomain = substr(strrchr($email, '@'), 1);
+        if (in_array($emailDomain, $disposableDomains, true)) {
+            return back()->withInput()->withErrors([
+                'email' => 'Please use a valid business or personal email address.',
+            ]);
         }
 
-        if (in_array($emailDomain, $disposableDomains, true))
-        {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'email' => 'Please use a valid business or personal email address.'
-                ]);
-        }
-
-        // 4. Rate limiting
-        $key = 'contact-form:' . $request->ip();
-
-        if (RateLimiter::tooManyAttempts($key, 3))
-        {
-            $seconds = RateLimiter::availableIn($key);
-
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'email' => 'Too many submissions. Please try again later.'
-                ]);
-        }
-
-        // 5. Validate form fields
+        // 5. Validate fields + reCAPTCHA
         $validated = $request->validate([
-            'fullname' => [
-                'required',
-                'string',
-                'min:2',
-                'max:255',
-            ],
-
-            'company_name' => [
-                'required',
-                'string',
-                'min:2',
-                'max:255',
-            ],
-
-            'mobile' => [
-                'nullable',
-                'string',
-                'max:20',
-            ],
-
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-            ],
-
-            'category_id' => [
-                'required',
-            ],
-
-            'message' => [
-                'required',
-                'string',
-                'max:2000',
-            ],
-
-            'g-recaptcha-response' => [
-                'required',
-                'captcha',
-            ],
+            'fullname'             => ['required', 'string', 'min:2', 'max:255'],
+            'company_name'         => ['required', 'string', 'min:2', 'max:255'],
+            'mobile'               => ['required', 'string', 'max:20'],
+            'email'                => ['required', 'email', 'max:255'],
+            'category_id'          => ['required'],
+            'message'              => ['nullable', 'string', 'max:2000'],
+            'g-recaptcha-response' => ['required', 'captcha'],
+        ], [
+            'g-recaptcha-response.required' => 'Please verify that you are not a robot.',
+            'g-recaptcha-response.captcha'  => 'Captcha verification failed. Please try again.',
         ]);
 
-        // Validate the actual number of digits in the phone number.
+        // Phone number must contain 8 to 15 digits
         $phoneDigits = preg_replace('/\D/', '', $validated['mobile']);
 
         if (strlen($phoneDigits) < 8 || strlen($phoneDigits) > 15) {
@@ -648,89 +558,75 @@ class DashboardController extends Controller
             ]);
         }
 
-        // 6. Count the submission only after validation passes
+        // 6. Count the attempt (once, after validation passes)
         RateLimiter::hit($key, 600);
 
-        // 7. Prepare contact data
+        // 7. Save contact
         $contactData = [
-            'fullname' => $validated['fullname'],
-            'company_name' => $validated['company_name'],
-            'mobile' => $validated['mobile'] ?? null,
-            'email' => $validated['email'],
-            'message' => $validated['message'],
-            'category_id' => is_numeric($request->category_id)
-                ? $request->category_id
-                : null,
-            'requirement_type' => !is_numeric($request->category_id)
-                ? $request->category_id
-                : null,
+            'fullname'         => $validated['fullname'],
+            'company_name'     => $validated['company_name'],
+            'mobile'           => $validated['mobile'],
+            'email'            => $validated['email'],
+            'message'          => $validated['message'] ?? null,
+            'category_id'      => is_numeric($request->category_id) ? $request->category_id : null,
+            'requirement_type' => !is_numeric($request->category_id) ? $request->category_id : null,
         ];
 
-        // 8. Save contact
-        $contact = Contact::create($contactData);
-
-        // 9. Prepare Google Sheet data
-        $sheetData = [
-            'form_type' => $request->form_source ?? 'Contact Form',
-            'name' => $validated['fullname'],
-            'category' => is_numeric($request->category_id)
-                ? ($contact->category ? $contact->category->name : '')
-                : $contact->requirement_type,
-            'product_name' => $request->product_name ?? '',
-            'company_name' => $validated['company_name'],
-            'contact' => $validated['mobile'] ?? '',
-            'email' => $validated['email'],
-            'country' => $request->country ?? '',
-            'message' => $validated['message'],
-            'date' => now()->format('Y-m-d H:i:s'),
-        ];
-
-        // 10. Send Google Sheet + emails
         try {
-            // Send data to Google Sheet
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json'
-                ])
-                ->post(
-                    'https://script.google.com/macros/s/AKfycbwfaZf-dge2a9rtvRPd0D1SCKHarK77pmxESctjrs_fq1iprG1_mXLFSAviuosNq4I0Xg/exec',
-                    $sheetData
-                );
+            $contact = Contact::create($contactData);
+        } catch (\Throwable $e) {
+            Log::error('Contact save failed: ' . $e->getMessage());
 
-            if ($response->failed())
-            {
-                Log::error('Google Sheets API request failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-            }
+            return back()->withInput()->with('error', 'Something went wrong. Please try again.');
+        }
 
-            // Send email to user
-            Mail::to($validated['email'])
-                ->send(new SendContactMailToUser());
+        // 8. Send to Google Sheet (a failure here must not block the user)
+        try {
+            $sheetData = [
+                'form_type'    => $request->form_source ?? 'Contact Form',
+                'name'         => $validated['fullname'],
+                'category'     => is_numeric($request->category_id)
+                                    ? optional($contact->category)->name
+                                    : $contact->requirement_type,
+                'product_name' => $request->product_name ?? '',
+                'company_name' => $validated['company_name'],
+                'contact'      => $validated['mobile'],
+                'email'        => $validated['email'],
+                'country'      => $request->country ?? '',
+                'message'      => $validated['message'] ?? '',
+                'date'         => now()->format('Y-m-d H:i:s'),
+            ];
 
-            // Send email to admin
-            Mail::to([
-                'sales@flexibel.ae'
-            ])->send(
-                new SendContactMailToAdmin($contactData)
+            $response = Http::timeout(30)->post(
+                'https://script.google.com/macros/s/AKfycbwfaZf-dge2a9rtvRPd0D1SCKHarK77pmxESctjrs_fq1iprG1_mXLFSAviuosNq4I0Xg/exec',
+                $sheetData
             );
 
-            // 11. Success redirect
-            return redirect()
-                ->route('thank-you')
-                ->with([
-                    'success' => true,
-                    'form_source' => $request->form_source ?? 'inquiry'
+            if ($response->failed()) {
+                Log::error('Google Sheets request failed', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
                 ]);
-        } 
-        catch (\Exception $e)
-        {
-            Log::error('Contact Form Error: ' . $e->getMessage());
-            return back()
-                ->withInput()
-                ->with('error', 'Something went wrong. Please try again.');
+            }
+        } catch (\Throwable $e) {
+            Log::error('Google Sheet error: ' . $e->getMessage());
         }
+
+        // 9. Send emails (a failure here must not block the user)
+        try {
+            Mail::to($validated['email'])->send(new SendContactMailToUser());
+            Mail::to('sales@flexibel.ae')->send(new SendContactMailToAdmin($contactData));
+        } catch (\Throwable $e) {
+            Log::error('Contact mail error: ' . $e->getMessage());
+        }
+
+        // 10. Redirect to thank you page
+        return redirect()
+            ->route('thank-you')
+            ->with([
+                'success'     => true,
+                'form_source' => $request->form_source ?? 'inquiry',
+            ]);
     }
 
     public function Thankyou()
@@ -1283,60 +1179,78 @@ class DashboardController extends Controller
     
     public function JobDetailsSubmit(Request $request)
     {
-        // Honeypot check
-        if (!empty($request->website_url))
-        {
-            return back()->with('error', 'Invalid form submission.');
+        // 1. Honeypot
+        if ($request->filled('website_url')) {
+            return back()->withInput()->with('error', 'Invalid form submission.');
         }
 
+        // 2. Rate limit (check only; counted after validation passes)
+        $key = 'job-form:' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            $minutes = ceil(RateLimiter::availableIn($key) / 60);
+
+            return back()->withInput()->with(
+                'error',
+                "Too many attempts. Please try again in {$minutes} minute(s)."
+            );
+        }
+
+        // 3. Validate (uses the same 'captcha' rule as the contact form)
         $validated = $request->validate([
-            'fullname' => 'required|string',
-            'year' => 'required|numeric',
-            'phone' => 'required|string|max:30',
-            'email' => 'required|email',
-            'message' => 'required|string',
-            'resume' => 'required|mimes:pdf,doc,docx|max:5120',
-            'applied_for' => 'required|string'
+            'fullname'             => ['required', 'string', 'min:2', 'max:100'],
+            'year'                 => ['required', 'numeric', 'min:0', 'max:60'],
+            'phone'                => ['required', 'string', 'max:30'],
+            'email'                => ['required', 'email', 'max:255'],
+            'message'              => ['required', 'string', 'max:2000'],
+            'resume'               => ['required', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
+            'applied_for'          => ['required', 'string', 'max:255'],
+            'g-recaptcha-response' => ['required', 'captcha'],
+        ], [
+            'g-recaptcha-response.required' => 'Please verify that you are not a robot.',
+            'g-recaptcha-response.captcha'  => 'Captcha verification failed. Please try again.',
         ]);
 
-        $resumePath = null;
-        if ($request->hasFile('resume'))
-        {
+        RateLimiter::hit($key, 600);
+
+        // 4. Save resume with a unique, safe filename
+        try {
             $resumeFile = $request->file('resume');
-            $resumeName = $resumeFile->getClientOriginalName();
+            $extension  = strtolower($resumeFile->getClientOriginalExtension());
+            $resumeName = time() . '_' . Str::random(10) . '.' . $extension;
+
             $resumeFile->move(public_path('resume_uploads'), $resumeName);
-            $resumePath =  'resume_uploads/' .$resumeName;
+            $resumePath = 'resume_uploads/' . $resumeName;
+
+            $jobData = [
+                'fullname'    => $validated['fullname'],
+                'year'        => $validated['year'],
+                'phone'       => $validated['phone'],
+                'email'       => $validated['email'],
+                'message'     => $validated['message'],
+                'resume'      => $resumePath,
+                'applied_for' => $validated['applied_for'],
+            ];
+
+            JobForm::create($jobData);
+        } catch (\Throwable $e) {
+            Log::error('Job form save failed: ' . $e->getMessage());
+
+            return back()->withInput()->with('error', 'Something went wrong. Please try again.');
         }
-                
-        JobForm::create([
-            'fullname' => $validated['fullname'],
-            'year' => $validated['year'],
-            'phone' => $validated['phone'],
-            'email' => $validated['email'],
-            'message' => $validated['message'],
-            'resume' => $resumePath,
-            'applied_for' => $validated['applied_for'],
-        ]);
 
-        $jobData = [
-            'fullname' => $validated['fullname'],
-            'year' => $validated['year'],
-            'phone' => $validated['phone'],
-            'email' => $validated['email'],
-            'message' => $validated['message'],
-            'resume' => $resumePath,
-            'applied_for' => $validated['applied_for'],
-        ];
-
+        // 5. Emails (a failure here must not block the user: the application is already saved)
         try {
             Mail::to($validated['email'])->send(new SendCurrentVacancyMailToUser());
-            Mail::to(['sales@flexibel.ae'])->send(new SendCurrentVacancyMailToAdmin($jobData));
-          return redirect()->route('thank-you')->with('success', 'Your message has been sent successfully.');
-        } catch (\Exception $e) {
-            Log::error('Email sending failed: ' . $e->getMessage());
-            return back()->with('error', 'Failed to send the email. Please try again later.');
-        }        
-        //return redirect()->route('thank-you')->with('success', 'Form submitted successfully!');
+            Mail::to('sales@flexibel.ae')->send(new SendCurrentVacancyMailToAdmin($jobData));
+        } catch (\Throwable $e) {
+            Log::error('Job form mail error: ' . $e->getMessage());
+        }
+
+        // 6. Always redirect once the application is saved
+        return redirect()
+            ->route('thank-you')
+            ->with('success', 'Your application has been submitted successfully.');
     }
     
     public function CatalogueForm()
@@ -1537,187 +1451,113 @@ class DashboardController extends Controller
     
     public function TestimonialSubmit(Request $request)
     {
-        // 1. Honeypot check
-        if ($request->filled('website_url'))
-        {
-            Log::warning('Testimonial form blocked: honeypot triggered', [
-                'ip' => $request->ip(),
-            ]);
+        // 1. Honeypot
+        if ($request->filled('website_url')) {
+            Log::warning('Testimonial form blocked: honeypot triggered', ['ip' => $request->ip()]);
 
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'website_url' => 'Invalid form submission.'
-                ]);
+            return back()->withInput()->with('error', 'Invalid form submission.');
         }
 
-        // 2. Disposable / temporary email domains
+        // 2. Rate limit (check only; counted after validation passes)
+        $key = 'testimonial-form:' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+            $minutes = ceil(RateLimiter::availableIn($key) / 60);
+
+            return back()->withInput()->with(
+                'error',
+                "Too many submissions. Please try again in {$minutes} minute(s)."
+            );
+        }
+
+        // 3. Disposable email check
         $disposableDomains = [
-            'mailinator.com',
-            '10minutemail.com',
-            'guerrillamail.com',
-            'tempmail.com',
-            'temp-mail.org',
-            'throwawaymail.com',
-            'maildrop.cc',
-            'dispostable.com',
-            'getairmail.com',
-            'moakt.com',
-            'spamgourmet.com',
-            'yopmail.com',
-            'sharklasers.com',
-            'mailnesia.com',
-            'fakemail.net',
-            'emailondeck.com',
-            'trashmail.com',
-            'mintemail.com',
-            'mytemp.email',
-            'mailboxvip.org',
-            'usmailerbox.org',
-            'mail220v.org',
-            'alquilerjetskitf.com',
-            'aimusicfixer.com'
+            'mailinator.com', '10minutemail.com', 'guerrillamail.com', 'tempmail.com',
+            'temp-mail.org', 'throwawaymail.com', 'maildrop.cc', 'dispostable.com',
+            'getairmail.com', 'moakt.com', 'spamgourmet.com', 'yopmail.com',
+            'sharklasers.com', 'mailnesia.com', 'fakemail.net', 'emailondeck.com',
+            'trashmail.com', 'mintemail.com', 'mytemp.email', 'mailboxvip.org',
+            'usmailerbox.org', 'mail220v.org', 'alquilerjetskitf.com', 'aimusicfixer.com',
         ];
 
         $email = strtolower(trim($request->input('email', '')));
-        $emailDomain = '';
+        $emailDomain = str_contains($email, '@') ? substr(strrchr($email, '@'), 1) : '';
 
-        if (str_contains($email, '@'))
-        {
-            $emailDomain = substr(strrchr($email, '@'), 1);
+        if ($emailDomain && in_array($emailDomain, $disposableDomains, true)) {
+            return back()->withInput()->withErrors([
+                'email' => 'Please use a valid email address.',
+            ]);
         }
 
-        if ($emailDomain && in_array($emailDomain, $disposableDomains))
-        {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'email' => 'Please use a valid email address.'
-                ]);
-        }
-
-        // 3. reCAPTCHA check
-        $captcha = $request->input('g-recaptcha-response');
-        if (!$captcha)
-        {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'g-recaptcha-response' => 'Please verify that you are not a robot.'
-                ]);
-        }
-
-        // 4. Rate limiting
-        $key = 'testimonial-form:' . $request->ip();
-        if (RateLimiter::tooManyAttempts($key, 3))
-        {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'email' => 'Too many submissions. Please try again later.'
-                ]);
-        }
-
-        // 5. Server-side validation
+        // 4. Validate + reCAPTCHA (same 'captcha' rule as the other forms)
         $validated = $request->validate([
-            'fullname' => [
-                'required',
-                'string',
-                'min:2',
-                'max:50'
-            ],
-            'mobile' => [
-                'required',
-                'string',
-                'digits_between:10,15'
-            ],
-            'email' => [
-                'required',
-                'email',
-                'max:60'
-            ],
-            'message' => [
-                'required',
-                'string',
-                'max:1000'
-            ],
-            'country' => [
-                'required',
-                'string'
-            ],
-            'g-recaptcha-response' => [
-                'required'
-            ],
+            'fullname'             => ['required', 'string', 'min:2', 'max:50'],
+            'mobile'               => ['required', 'string', 'digits_between:10,15'],
+            'email'                => ['required', 'email', 'max:60'],
+            'message'              => ['required', 'string', 'max:1000'],
+            'country'              => ['required', 'string', 'max:100'],
+            'g-recaptcha-response' => ['required', 'captcha'],
+        ], [
+            'g-recaptcha-response.required' => 'Please verify that you are not a robot.',
+            'g-recaptcha-response.captcha'  => 'Captcha verification failed. Please try again.',
+            'country.required'              => 'Please select your country.',
         ]);
 
         RateLimiter::hit($key, 600);
 
-        try
-        {
-            // 6. Save testimonial
-            $testimonialData = [
-                'fullname' => $validated['fullname'],
-                'mobile' => $validated['mobile'],
-                'email' => $validated['email'],
-                'message' => $validated['message'],
-                'country' => $validated['country'],
-            ];
+        // 5. Save testimonial
+        $testimonialData = [
+            'fullname' => $validated['fullname'],
+            'mobile'   => $validated['mobile'],
+            'email'    => $validated['email'],
+            'message'  => $validated['message'],
+            'country'  => $validated['country'],
+        ];
 
+        try {
             TestimonialForm::create($testimonialData);
+        } catch (\Throwable $e) {
+            Log::error('Testimonial save failed: ' . $e->getMessage());
 
-            // 7. Prepare Google Sheet data
-            $sheetData = [
-                'form_type' => 'Testimonial Form',
-                'name' => $validated['fullname'],
-                'product_name' => $request->product_name ?? '',
-                'company_name' => $request->company_name ?? '',
-                'contact' => $validated['mobile'],
-                'email' => $validated['email'],
-                'country' => $validated['country'],
-                'message' => $validated['message'],
-                'date' => now()->format('Y-m-d H:i:s')
-            ];
+            return back()->withInput()->with('error', 'Something went wrong. Please try again.');
+        }
 
-            // 8. Send data to Google Sheets
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json'
-                ])
-                ->post(
-                    'https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec',
-                    $sheetData
-                );
+        // 6. Google Sheet (a failure here must not block the user)
+        try {
+            $response = Http::timeout(30)->post(
+                'https://script.google.com/macros/s/AKfycbyYHXGsCEykTxRvd600fQZR_IvtS9qNXknn0d17ZbDhWawJ8VUuPSjMUOxp8-WFle4G/exec',
+                [
+                    'form_type'    => 'Testimonial Form',
+                    'name'         => $validated['fullname'],
+                    'product_name' => $request->product_name ?? '',
+                    'company_name' => $request->company_name ?? '',
+                    'contact'      => $validated['mobile'],
+                    'email'        => $validated['email'],
+                    'country'      => $validated['country'],
+                    'message'      => $validated['message'],
+                    'date'         => now()->format('Y-m-d H:i:s'),
+                ]
+            );
 
             Log::info('Testimonial Google Sheet Response', [
                 'status' => $response->status(),
-                'body' => $response->body()
             ]);
-
-            // 9. Send email to user
-            Mail::to($validated['email'])
-                ->send(new SendTestimonialMailToUser());
-
-            // 10. Send email to admin
-            Mail::to(['sales@flexibel.ae'])
-                ->send(new SendTestimonialMailToAdmin($testimonialData));
-
-            // 11. Redirect
-            return redirect()
-                ->route('thank-you')
-                ->with('success', 'Your message has been sent successfully.');
-
-        } catch (\Exception $e) {
-
-            Log::error('TestimonialSubmit failed', [
-                'message' => $e->getMessage(),
-                'email' => $request->email,
-                'ip' => $request->ip(),
-            ]);
-
-            return back()
-                ->withInput()
-                ->with('error', 'Failed to send the email. Please try again later.');
+        } catch (\Throwable $e) {
+            Log::error('Testimonial Google Sheet error: ' . $e->getMessage());
         }
+
+        // 7. Emails (a failure here must not block the user)
+        try {
+            Mail::to($validated['email'])->send(new SendTestimonialMailToUser());
+            Mail::to('sales@flexibel.ae')->send(new SendTestimonialMailToAdmin($testimonialData));
+        } catch (\Throwable $e) {
+            Log::error('Testimonial mail error: ' . $e->getMessage());
+        }
+
+        // 8. Always redirect once the testimonial is saved
+        return redirect()
+            ->route('thank-you')
+            ->with('success', 'Your message has been sent successfully.');
     }
     
     public function CaseStudyForm()
