@@ -193,7 +193,9 @@
                         </svg>
                     </a>
                 </div>
-                <div class="">© <?php echo date('Y'); ?> Flexibel LLC. All Rights Reserved.
+                <div class="">
+                    <p class="mb-0">© <?php echo date('Y'); ?> Flexibel LLC. All Rights Reserved.</p>
+                      <p  class="mb-0"><a href="https://www.intelliworkz.tech/" style="font-size:12px; color: var(--footer-text);">Designed, Developed & Promoted by <b style="color:#ff5252;">Intelliworkz</b></a></p>
                 </div>
             </div>
                 </div>
