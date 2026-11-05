@@ -19,9 +19,16 @@
             @csrf
             
             <div class="row">
-            <div style="display:none;">
-                <input type="text" name="website_url" id="website_url" value="">
-            </div>
+                <div style="position:absolute; left:-9999px; opacity:0; height:0; overflow:hidden;">
+                    <input
+                        type="text"
+                        name="website_url"
+                        id="website_url"
+                        value=""
+                        tabindex="-1"
+                        aria-hidden="true"
+                    >
+                </div>
               <!-- Name -->
               <div class="col-md-12 mb-3">
                 <label>Name <span class="required-star">*</span></label>

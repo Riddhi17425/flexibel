@@ -10,68 +10,75 @@
       <div class="modal-body">
         <div class="col-md-12 vacancie_form testimonial_form">
           <div class="stepper_wrapper">  
-          <form id="testimonialform" action="{{route('testimonial.submit')}}" method="post" enctype="multipart/form-data">
-            @csrf
-            <div class="row">
-                <div style="display:none;">
-                    <input type="text" name="website_url" id="website_url" value="">
-                </div>
-              <div class="col-md-12 mb-lg-4 mb-md-3 mb-4">
-                <label>Name *</label>
-                <input type="text" class="form-control" id="t_fullname" name="fullname" maxlength="50"
-                    oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trimStart();"
-                    placeholder="Enter your name">
-                     <small id="t_fullnameError" class="text-danger"></small>
-              </div>
-              <div class="col-md-12 mb-lg-4 mb-md-3 mb-4">
-                <label>Mobile Number *</label>
-                <input type="text" class="form-control" id="t_mobile" name="mobile" minlength="10" maxlength="15" 
-                    oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 15);" pattern="\d{10,15}" title="Mobile number must be between 10 to 15 digits"
-                    placeholder="Enter your mobile number">
-                    <small id="t_mobileError" class="text-danger"></small>
-              </div>
-              <div class="col-md-12 mb-lg-4 mb-md-3 mb-4">
-                <label>Email Address *</label>
-                <input type="email" id="t_email" name="email" class="form-control" maxlength="60" placeholder="Enter your email address">
-                <small id="t_emailError" class="text-danger"></small>
-              </div>
+            <form id="testimonialform" action="{{route('testimonial.submit')}}" method="post" enctype="multipart/form-data">
+              @csrf
+              <div class="row">
+                  <div style="position:absolute; left:-9999px; opacity:0; height:0; overflow:hidden;">
+                    <input
+                        type="text"
+                        name="website_url"
+                        id="website_url"
+                        value=""
+                        tabindex="-1"
+                        aria-hidden="true"
+                    >
+                  </div>
                 <div class="col-md-12 mb-lg-4 mb-md-3 mb-4">
-                                <label>Country </label>
-                                <select class="form-select" id="country-select" name="country">
-                                  <option value="">Select Country</option>
-                                </select>
-                            </div>
-              <div class="col-md-12 mb-lg-4 mb-md-3 mb-4">
-                <label>Message *</label>
-                <!--<textarea class="form-control" rows="4" id="t_message" name="message" maxlength="100" placeholder="Please share your experience with us"></textarea>-->
-                <input type="text" class="form-control" rows="4" id="t_message" name="message" placeholder="Please share your experience with us">
-                <small id="t_messageError" class="text-danger"></small>
+                  <label>Name *</label>
+                  <input type="text" class="form-control" id="t_fullname" name="fullname" maxlength="50"
+                      oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '').replace(/\s+/g, ' ').trimStart();"
+                      placeholder="Enter your name">
+                      <small id="t_fullnameError" class="text-danger"></small>
+                </div>
+                <div class="col-md-12 mb-lg-4 mb-md-3 mb-4">
+                  <label>Mobile Number *</label>
+                  <input type="text" class="form-control" id="t_mobile" name="mobile" minlength="10" maxlength="15" 
+                      oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 15);" pattern="\d{10,15}" title="Mobile number must be between 10 to 15 digits"
+                      placeholder="Enter your mobile number">
+                      <small id="t_mobileError" class="text-danger"></small>
+                </div>
+                <div class="col-md-12 mb-lg-4 mb-md-3 mb-4">
+                  <label>Email Address *</label>
+                  <input type="email" id="t_email" name="email" class="form-control" maxlength="60" placeholder="Enter your email address">
+                  <small id="t_emailError" class="text-danger"></small>
+                </div>
+                  <div class="col-md-12 mb-lg-4 mb-md-3 mb-4">
+                                  <label>Country </label>
+                                  <select class="form-select" id="country-select" name="country">
+                                    <option value="">Select Country</option>
+                                  </select>
+                              </div>
+                <div class="col-md-12 mb-lg-4 mb-md-3 mb-4">
+                  <label>Message *</label>
+                  <!--<textarea class="form-control" rows="4" id="t_message" name="message" maxlength="100" placeholder="Please share your experience with us"></textarea>-->
+                  <input type="text" class="form-control" rows="4" id="t_message" name="message" placeholder="Please share your experience with us">
+                  <small id="t_messageError" class="text-danger"></small>
+                </div>
+                <div class="form-group mb-4">
+                      {!! NoCaptcha::display([
+                          'data-callback' => 'verifyCallback',
+                          'data-expired-callback' => 'expireCallback',
+                          'data-error-callback' => 'errorCallback'
+                      ]) !!}
+                                      <small id="t_recaptcha-error" class="text-danger"></small>
+                                      @error('g-recaptcha-response')
+                                          <small class="text-danger">{{ $message }}</small>
+                                      @enderror
+                                  </div>
+                <!--<div class="col-md-12 mb-lg-4 mb-md-3">-->
+                <!--  <label>Captcha *</label>                -->
+                <!--</div>-->
+                <div class="col-lg-3">
+                  <button type="submit" id="submitBtn" class="prod_btn">
+                    Submit
+                    <span class="svg ms-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="14" viewBox="0 0 13 14" fill="none">
+                        <path d="M1.5 13L11.5 1M11.5 1H1.5M11.5 1V11.9091" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                      </svg>
+                    </span>
+                  </button>
+                </div>
               </div>
-               <div class="form-group mb-4">
-                                    {!! NoCaptcha::display([
-    'data-callback' => 'verifyCallback',
-    'data-expired-callback' => 'expireCallback',
-    'data-error-callback' => 'errorCallback'
-]) !!}
-                                    <small id="t_recaptcha-error" class="text-danger"></small>
-                                    @error('g-recaptcha-response')
-                                        <small class="text-danger">{{ $message }}</small>
-                                    @enderror
-                                </div>
-              <!--<div class="col-md-12 mb-lg-4 mb-md-3">-->
-              <!--  <label>Captcha *</label>                -->
-              <!--</div>-->
-              <div class="col-lg-3">
-                <button type="submit" id="submitBtn" class="prod_btn">
-                  Submit
-                  <span class="svg ms-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="14" viewBox="0 0 13 14" fill="none">
-                      <path d="M1.5 13L11.5 1M11.5 1H1.5M11.5 1V11.9091" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
-                  </span>
-                </button>
-              </div>
-            </div>
             </form>
           </div>
         </div>

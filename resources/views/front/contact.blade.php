@@ -136,9 +136,16 @@
                     <p >Fill out the form below with your details, and weâ€™ll get back to you as soon as possible.</p>
                     <form  id="contactform" action="{{route('contact.submit')}}" method="post" >
                         @csrf
+                        <input type="hidden" name="form_started_at" value="{{ time() }}">
                         <input type="hidden" name="form_source" id="form_source" value="Page Inquiry">
-                        <div style="display:none;">
-                            <input type="text" name="website_url" id="website_url" value="">
+                        <div style="position:absolute; left:-9999px; opacity:0; height:0; overflow:hidden;">
+                            <input
+                                type="text"
+                                name="website_url"
+                                value=""
+                                tabindex="-1"
+                                aria-hidden="true"
+                            >
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-lg-5 mb-4">
