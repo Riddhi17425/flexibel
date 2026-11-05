@@ -13,7 +13,7 @@
     <div class="modal-content">
 
       <div class="modal-header">
-        <h5 class="modal-title">Enquiry</h5>
+        <p class="modal-title">Enquiry</p>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 

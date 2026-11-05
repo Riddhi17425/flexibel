@@ -15,7 +15,7 @@
                     <!--</div>-->
                 </div>
                 <div class="col-xl-2 col-lg-2 col-md-4 col-6 ps-xl-4 mb-lg-0 mb-4">
-                    <h4 class="ft_head">LINKS</h4>
+                    <p class="ft_head">LINKS</p>
                     <ul class="ft_list">
                         <li><a href="{{route('dashboard')}}">Home</a></li>
                         <li><a href="{{route('about')}}">About</a></li>
@@ -27,7 +27,7 @@
                     </ul>
                 </div>
                 <div class="col-xl-3 col-lg-3 col-md-4 col-6 ps-xl-4 mb-lg-0 mb-4">
-                    <h4 class="ft_head">Resources</h4>
+                    <p class="ft_head">Resources</p>
                     <ul class="ft_list">
                         <li><a href="{{route('case-studies')}}">Case Studies</a></li>
                         <li><a href="{{route('blog')}}">Blogs</a></li>
@@ -36,7 +36,7 @@
                         <li><a href="{{route('faq')}}">FAQ</a></li>
                     </ul>
                     <div class="d-none d-md-block">
-                        <h4 class="ft_head mt-4 mt-md-5">services</h4>
+                        <p class="ft_head mt-4 mt-md-5">services</p>
                         <ul class="ft_list">
                             <li><a href="{{route('premium-service')}}">Engineering & Design</a></li>
                             <li><a href="{{route('Inspection-services')}}">Inspection & QA</a></li>
@@ -46,7 +46,7 @@
                         </ul>
                     </div>
                     <div class="d-md-none">
-                        <h4 class="ft_head mt-4 mt-md-5">Career</h4>
+                        <p class="ft_head mt-4 mt-md-5">Career</p>
                         <ul class="ft_list">
                         <!--<li><a href="./life_at_flexibellows.php">Life at Flexibellows</a></li>-->
                         <li><a href="{{ route('current.vacancies') }}">Current Vacancies</a></li>
@@ -67,7 +67,7 @@
                 @endphp
                 <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6 ">
                     <div class="d-md-none mb-4">
-                        <h4 class="ft_head mt-4 mt-md-5">services</h4>
+                        <p class="ft_head mt-4 mt-md-5">services</p>
                         <ul class="ft_list">
                             <li><a href="{{route('premium-service')}}">Engineering & Design</a></li>
                             <li><a href="{{route('Inspection-services')}}">Inspection & QA</a></li>
@@ -76,7 +76,7 @@
                             <li><a href="{{route('emergency-services')}}">Emergency & Turnaround Support</a></li>
                         </ul>
                     </div>
-                    <h4 class="ft_head">PRODUCTS</h4>
+                    <p class="ft_head">PRODUCTS</p>
                     <!-- backup for catgory list -->
                     <!--<ul class="ft_list">-->
                     <!--    @forelse ($categories as $category)-->
@@ -123,13 +123,13 @@
 
                     </ul>
                     <div class="d-none d-md-block">
-                        <h4 class="ft_head mt-4 mt-md-5">Career</h4>
+                        <p class="ft_head mt-4 mt-md-5">Career</p>
                         <ul class="ft_list">
                         <!--<li><a href="./life_at_flexibellows.php">Life at Flexibellows</a></li>-->
                         <li><a href="{{ route('current.vacancies') }}">Current Vacancies</a></li>
                         </ul>
                     </div>
-                    <h4 class="ft_head mt-4 mt-md-5">Contact</h4>
+                    <p class="ft_head mt-4 mt-md-5">Contact</p>
                     <ul class="ft_list">
                         <li><a href="tel:+971 529037473"><b>M: </b>+971 529037473</a></li>
                         <li><a href="mailto:sales@flexibel.ae"><b>E: </b>sales@flexibel.ae</a></li>
