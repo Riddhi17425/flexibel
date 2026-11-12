@@ -268,15 +268,15 @@ table tbody td:first-child {
     // Blog image
     $blogSchemaImage = null;
 
-    if (!empty($blog_details->detail_image)) {
+    if (!empty($blog_details->front_image)) {
         $blogSchemaImage = asset(
-            'public/admin/blogs/detail_image/' .
-            basename($blog_details->detail_image)
-        );
-    } elseif (!empty($blog_details->front_image)) {
-        $blogSchemaImage = asset(
-            'public/admin/blogs/front_image/' .
+            'public/blogs/front_image/' .
             basename($blog_details->front_image)
+        );
+    } elseif (!empty($blog_details->detail_image)) {
+        $blogSchemaImage = asset(
+            'public/blogs/detail_image/' .
+            basename($blog_details->detail_image)
         );
     }
 
