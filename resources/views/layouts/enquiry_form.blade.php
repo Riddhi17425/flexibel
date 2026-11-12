@@ -25,6 +25,7 @@
 
                         <form id="inquiryform" action="{{ route('contact.submit') }}" method="POST">
                             @csrf
+                            <input type="hidden" name="form_started_at" value="{{ time() }}">
                             <input type="hidden" name="form_source" value="Popup Inquiry">
 
                             <!-- NAME -->
@@ -76,7 +77,7 @@
 
                                 <!-- MESSAGE -->
                                 <div class="col-md-6 mb-3">
-                                    <label>Message</label>
+                                    <label>Message <span class="required-star">*</span></label>
                                     <input type="text" class="form-control" name="message" id="message">
                                 </div>
 
@@ -155,6 +156,9 @@
                 category_id: {
                     required: true
                 },
+                message: {
+                    required: true
+                },
                 hiddenRecaptcha: {
                     required: true
                 }
@@ -166,6 +170,7 @@
                 mobile: "Valid mobile required",
                 email: "Valid email required",
                 category_id: "Category required",
+                message: "Message is required",
                 hiddenRecaptcha: "Please verify captcha"
             },
 

@@ -320,6 +320,18 @@
                 </div>
             </nav>
         </header>
+        @if ($errors->any() || session('error'))
+            <div class="container mt-3">
+                <div class="alert alert-danger" role="alert">
+                    @if (session('error'))
+                        <div>{{ session('error') }}</div>
+                    @endif
+                    @foreach ($errors->all() as $message)
+                        <div>{{ $message }}</div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
 
         <!-- Offcanvas -->
         <div class="offcanvas offcanvas-start custom-sidebar offcanvas-wide" tabindex="-1" id="offcanvasExample">
