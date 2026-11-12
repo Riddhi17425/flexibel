@@ -430,7 +430,7 @@
                     <button type="button" class="btn back-btn back-to-main">
                         <i class="fa-solid fa-chevron-left fs-6"></i> Menu
                     </button>
-                    <h5 class="letter-area">Products</h5>
+                    <p class="letter-area">Products</p>
                     <div class="category-list">
 
                         <div class="sub-menu-item">
@@ -479,7 +479,7 @@
                     <button type="button" class="btn back-btn back-to-main">
                         <i class="fa-solid fa-chevron-left fs-6"></i> Menu
                     </button>
-                    <h5 class="letter-area">Services</h5>
+                    <p class="letter-area">Services</p>
                     <div class="sub-menu-item">
                         <a class="sub-menu-list" href="{{ route('premium-service') }}">
                             <div class="sub-menu-title">
@@ -515,7 +515,7 @@
                         <button type="button" class="btn back-btn back-to-categories">
                             <i class="fa-solid fa-chevron-left fs-6"></i> Back
                         </button>
-                        <h5 class="letter-area">{{ $category->name }}</h5>
+                        <p class="letter-area">{{ $category->name }}</p>
                         @if ($category->url != 'metallic-expansion-joints')
                             <a href="{{ route('products.by.category', ['category' => $category->url]) }}"
                                 class="view-all-btn">View All <i class="fa-solid fa-chevron-right fs-6"></i></a>

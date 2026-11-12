@@ -80,7 +80,7 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $metatitle = "Expansion Joint Suppliers In UAE | Flexibel";
+        $metatitle = "Expansion Joint Manufacturer & Supplier in UAE | Flexibel";
         $metadescription = "Flexibel Expansion Joints is the UAE based manufacturer and suppliers of expansion joints bellows with highest quality standard in the Middle East.";
     
         $certificates = HomeCertificate::whereNull('deleted_at')->get();
